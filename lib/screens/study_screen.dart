@@ -18,11 +18,47 @@ class StudyScreen extends StatelessWidget {
           children: [
             ActivityTitleWidget(text: "독해활동"),
             SizedBox(height: 9),
-
+            Row(
+              children: [
+                Column(
+                  children: [
+                    ActivityContentWeight(
+                      text: "분야선택",
+                      width: 153,
+                      height: 188,
+                      image: Image.asset(
+                        "assets/icons/fields_select.png",
+                        width: 48,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 9),
+                Column(
+                  children: [
+                    ActivityContentWeight(
+                      text: "랜덤지문",
+                      width: 153,
+                      height: 107,
+                      image: Image.asset("assets/icons/random.png", width: 44),
+                      color: 0xfffde186,
+                    ),
+                    SizedBox(height: 10),
+                    ActivityContentWeight(
+                      text: "OCR",
+                      width: 153,
+                      height: 71,
+                      image: Image.asset("assets/icons/ocr.png", width: 38),
+                      color: 0xfffff3eb,
+                    ),
+                  ],
+                ),
+              ],
+            ),
             SizedBox(height: 19),
             ActivityTitleWidget(text: "단어장"),
-            SizedBox(height: 19),
-            ActivityContentWeight(text: "분야선택"),
+            SizedBox(height: 9),
+            ActivityContentWeight(text: "나만의 단어장 만들기", width: 315, height: 108),
           ],
         ),
       ),
