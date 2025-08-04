@@ -66,6 +66,18 @@ flutter:
     - assets/icons/fields_select.png
     - assets/icons/random.png
     - assets/icons/ocr.png
+    - assets/icons/humanity.png
+    - assets/icons/society.png
+    - assets/icons/law.png
+    - assets/icons/education.png
+    - assets/icons/ecosystem.png
+    - assets/icons/medicine.png
+    - assets/icons/engineering.png
+    - assets/icons/physics.png
+    - assets/icons/chemistry.png
+    - assets/icons/biology.png
+    - assets/icons/philosophy.png
+    - assets/icons/economy.png
     # logos
     - assets/logos/app_logo.png
 
