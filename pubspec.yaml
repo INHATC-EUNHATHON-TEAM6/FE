@@ -78,6 +78,7 @@ flutter:
     - assets/icons/biology.png
     - assets/icons/philosophy.png
     - assets/icons/economy.png
+    - assets/icons/exit.png
     # logos
     - assets/logos/app_logo.png
 
