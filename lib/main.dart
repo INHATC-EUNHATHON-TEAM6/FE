@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:words_hanjoom/screens/study_screen.dart';
+import 'package:words_hanjoom/screens/main_screen.dart';
 
 void main() {
   runApp(App());
@@ -11,8 +11,8 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(fontFamily: 'Jalnan'),
-      home: StudyScreen(),
+      theme: ThemeData(fontFamily: 'NotoSansKR'),
+      home: MainScreen(),
     );
   }
 }

@@ -11,6 +11,7 @@ class ActivityTitleWidget extends StatelessWidget {
       style: TextStyle(
         color: Color(0xff3a0b0b),
         fontSize: 28,
+        fontFamily: "Jalnan",
         shadows: [
           Shadow(
             blurRadius: 12.0, // 그림자의 번짐 정도
