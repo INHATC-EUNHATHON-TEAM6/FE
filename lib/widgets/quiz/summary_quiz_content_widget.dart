@@ -51,7 +51,7 @@ class SummaryQuizContentWidget extends StatelessWidget {
         ),
       );
     } else {
-      content = Column(children: [Container(width: 280, height: 339)]);
+      content = Column(children: [SizedBox(width: 280, height: 339)]);
     }
     if (summaryQuizStatus == 1) {
       marginTop = 63;
