@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:words_hanjoom/widgets/exit_button_widget.dart';
 import 'package:words_hanjoom/widgets/fields_widget.dart';
 
 class FieldsSelectContainerWidget extends StatelessWidget {
@@ -16,28 +17,11 @@ class FieldsSelectContainerWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-              decoration: BoxDecoration(
-                border: Border.all(color: Color(0xff733E17)),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: GestureDetector(
-                onTap: () => handleMainScreenWidget("learning"),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_back_ios, size: 16),
-                    Text(
-                      "뒤로가기",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            ExitButtonWidget(
+              text: "뒤로가기",
+              onTap: () {
+                handleMainScreenWidget("learning");
+              },
             ),
             SizedBox(height: 5),
             Text(

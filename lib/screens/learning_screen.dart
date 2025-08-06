@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:words_hanjoom/screens/main_screen.dart';
 import 'package:words_hanjoom/widgets/button_widget.dart';
 import 'package:words_hanjoom/widgets/exit_button_widget.dart';
 import 'package:words_hanjoom/widgets/reading_guide_widget.dart';
@@ -23,7 +24,7 @@ class _LearningScreenState extends State<LearningScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 50),
-            ExitButtonWidget(),
+            ExitButtonWidget(text: "나가기", destination: MainScreen()),
             SizedBox(height: 12),
             Row(
               children: [
