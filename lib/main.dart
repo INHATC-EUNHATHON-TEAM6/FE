@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:words_hanjoom/screens/main_screen.dart';
+import 'package:words_hanjoom/screens/learning_screen.dart';
 
 void main() {
   runApp(App());
@@ -12,7 +12,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(fontFamily: 'NotoSansKR'),
-      home: MainScreen(),
+      home: LearningScreen(),
     );
   }
 }
