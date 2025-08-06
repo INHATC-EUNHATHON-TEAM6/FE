@@ -17,7 +17,7 @@ class NavigationWidget extends StatelessWidget {
         context: context,
         removeBottom: true,
         child: Padding(
-          padding: EdgeInsets.only(top: 9, bottom: 16),
+          padding: EdgeInsets.only(top: 9, bottom: 12),
           child: BottomNavigationBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
