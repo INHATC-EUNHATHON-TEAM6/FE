@@ -23,8 +23,8 @@ class NavigationWidget extends StatelessWidget {
             elevation: 0,
             unselectedItemColor: Colors.white,
             selectedItemColor: Colors.white,
-            selectedLabelStyle: TextStyle(fontSize: 14),
-            unselectedLabelStyle: TextStyle(fontSize: 14),
+            selectedLabelStyle: TextStyle(fontSize: 14, fontFamily: "Jalnan"),
+            unselectedLabelStyle: TextStyle(fontSize: 14, fontFamily: "Jalnan"),
             items: [
               BottomNavigationBarItem(
                 icon: Image.asset("assets/icons/study.png", width: 36),
