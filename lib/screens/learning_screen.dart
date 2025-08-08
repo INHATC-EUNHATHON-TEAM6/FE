@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:words_hanjoom/screens/main_screen.dart';
 import 'package:words_hanjoom/widgets/button_widget.dart';
 import 'package:words_hanjoom/widgets/exit_button_widget.dart';
+import 'package:words_hanjoom/widgets/modal_widget.dart';
 import 'package:words_hanjoom/widgets/reading_guide_widget.dart';
 import 'package:words_hanjoom/widgets/reading_text_widget.dart';
 
@@ -14,6 +15,27 @@ class LearningScreen extends StatefulWidget {
 
 class _LearningScreenState extends State<LearningScreen> {
   bool isTranslating = false;
+
+  void _showExitModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return ModalWidget(
+          onYesPressed: () {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => MainScreen()),
+              (route) => false,
+            );
+          },
+          onNoPressed: () {
+            // 모달만 닫기
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +46,7 @@ class _LearningScreenState extends State<LearningScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 50),
-            ExitButtonWidget(text: "나가기", destination: MainScreen()),
+            ExitButtonWidget(text: "나가기", onTap: _showExitModal),
             SizedBox(height: 12),
             Row(
               children: [
