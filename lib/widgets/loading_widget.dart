@@ -5,12 +5,9 @@ class LoadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return Container(
-      width: size.width,
-      height: size.height,
-      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.5)),
-      child: Center(
+    return Scaffold(
+      backgroundColor: Colors.white.withValues(alpha: 0.5),
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
