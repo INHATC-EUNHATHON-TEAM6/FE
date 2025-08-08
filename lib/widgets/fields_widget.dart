@@ -3,6 +3,8 @@ import 'package:words_hanjoom/widgets/field_widget.dart';
 import 'package:words_hanjoom/widgets/fields_row_widget.dart';
 
 class FieldsWidget extends StatelessWidget {
+  final VoidCallback? onFieldSelected;
+
   final List<String> fieldsName = [
     "인문",
     "사회",
@@ -31,7 +33,8 @@ class FieldsWidget extends StatelessWidget {
     "철학": Image.asset("assets/icons/philosophy.png", width: 24),
     "경제": Image.asset("assets/icons/economy.png", width: 24),
   };
-  FieldsWidget({super.key});
+
+  FieldsWidget({super.key, this.onFieldSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +47,12 @@ class FieldsWidget extends StatelessWidget {
             one: FieldWidget(
               image: map[fieldsName[idx - 1]]!,
               name: fieldsName[idx - 1],
+              onTap: onFieldSelected,
             ),
             two: FieldWidget(
               image: map[fieldsName[idx]]!,
               name: fieldsName[idx],
+              onTap: onFieldSelected,
             ),
           ),
         );

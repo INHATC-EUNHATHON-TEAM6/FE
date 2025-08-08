@@ -1,55 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:words_hanjoom/screens/learning_screen.dart';
 
 class FieldWidget extends StatelessWidget {
   final Image image;
   final String name;
-  const FieldWidget({super.key, required this.image, required this.name});
+  final VoidCallback? onTap;
+
+  const FieldWidget({
+    super.key,
+    required this.image,
+    required this.name,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const LearningScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  const begin = 0.7;
-                  const end = 1.0;
-                  const curve = Curves.ease;
-
-                  var scaleTween = Tween(
-                    begin: begin,
-                    end: end,
-                  ).chain(CurveTween(curve: curve));
-                  var scaleAnimation = animation.drive(scaleTween);
-
-                  var fadeTween = Tween(
-                    begin: 0.0,
-                    end: 1.0,
-                  ).chain(CurveTween(curve: curve));
-                  var fadeAnimation = animation.drive(fadeTween);
-
-                  return AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: fadeAnimation.value,
-                        child: Transform.scale(
-                          scale: scaleAnimation.value,
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: child,
-                  );
-                },
-            transitionDuration: const Duration(milliseconds: 300),
-          ),
-        );
-      },
+      onTap: onTap,
       child: Container(
         width: 153,
         padding: EdgeInsets.symmetric(vertical: 18, horizontal: 18),
