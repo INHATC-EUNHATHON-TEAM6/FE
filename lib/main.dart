@@ -1,19 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:words_hanjoom/screens/record_page.dart';
 
-void main() {
-  runApp(App());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('ko_KR', null);
+  runApp(const MyApp());
 }
 
-class App extends StatelessWidget {
-  const App({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const String myAccessToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0MDFAdGVzdC5jb20iLCJ1c2VyX2lkIjozLCJhdXRoIjoiIiwiaWF0IjoxNzU2MTIzNDcxLCJleHAiOjE3NTYxMjcwNzF9.RPNHqKEOJxKx2tVcmPRXkmYSvnNApjHXjvvLX-o1rM8eIN8sA0tyVHn9oCX1J2b4WF4ZfadeSaojrJVIlG45MQ'; // 실제 토큰 전달!
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: Text("Hello flutter!")),
-        body: Center(child: Text("Hello World!")),
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ko', 'KR'),
+      ],
+      theme: ThemeData(
+        fontFamily: 'NotoSansKR',
+        scaffoldBackgroundColor: const Color(0xFFF9F7F1),
       ),
+      home: RecordPage(accessToken: myAccessToken), // 반드시 토큰 전달!
     );
   }
 }
