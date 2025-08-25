@@ -1,32 +1,56 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart'; // compute
 import 'package:http/http.dart' as http;
 import '../models/activity.dart';
 
 class ActivityService {
-  final String _baseUrl = 'https://yourapi.com/api/feedback/list';
+  ActivityService(this._client, {required this.baseUrl});
 
-  // accessToken은 로그인 시 받아 프로젝트 어딘가에 저장 or 인자로 전달
-  Future<Map<int, List<Activity>>> fetchMonthActivities(
-      int year, int month, String accessToken) async {
-    // day는 월별 조회엔 필요없으니 생략 (필요하면 파라미터 추가)
-    final url = '$_baseUrl?year=$year&month=$month';
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {'Authorization': 'Bearer $accessToken'},
-    );
+  final http.Client _client;
+  final String baseUrl; // e.g. 'https://yourapi.com/api/feedback/list'
 
-    if (response.statusCode == 200) {
-      final jsonBody = json.decode(response.body);
-      final Map monthActivity = jsonBody['monthActivity'];
-      Map<int, List<Activity>> result = {};
-      monthActivity.forEach((day, list) {
-        result[int.parse(day.toString())] = (list as List)
-            .map((item) => Activity.fromJson(item))
-            .toList();
-      });
-      return result;
-    } else {
-      throw Exception('스크랩 활동 데이터를 불러오지 못했습니다');
+  Future<Map<int, List<Activity>>> fetchMonthActivities({
+    required int year,
+    required int month,
+    required String accessToken,
+  }) async {
+    final uri = Uri.parse(baseUrl).replace(queryParameters: {
+      'year': '$year',
+      'month': '$month',
+    });
+
+    final response = await _client
+        .get(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Accept': 'application/json',
+      },
+    )
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200) {
+      throw Exception('활동 조회 실패: ${response.statusCode} ${response.body}');
     }
+
+    // 무거운 파싱은 별도 아이솔레이트에서
+    return compute(_parseMonthActivities, response.body);
   }
+}
+
+// 반드시 탑레벨 함수여야 compute 사용 가능
+Map<int, List<Activity>> _parseMonthActivities(String body) {
+  final Map<String, dynamic> root = json.decode(body) as Map<String, dynamic>;
+  final Map<String, dynamic> monthActivity =
+  root['monthActivity'] as Map<String, dynamic>;
+
+  final result = <int, List<Activity>>{};
+  for (final entry in monthActivity.entries) {
+    final day = int.parse(entry.key); // 키가 "1","2" 같은 문자열일 때 대비
+    final list = (entry.value as List)
+        .map((e) => Activity.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+    result[day] = list;
+  }
+  return result;
 }

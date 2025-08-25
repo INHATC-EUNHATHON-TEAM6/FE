@@ -1,7 +1,7 @@
 class Activity {
   final int articleId;
   final String category;
-  final String activityAt;
+  final DateTime activityAt;
 
   Activity({
     required this.articleId,
@@ -9,12 +9,11 @@ class Activity {
     required this.activityAt,
   });
 
-  // JSON 파싱
-  factory Activity.fromJson(Map json) {
+  factory Activity.fromJson(Map<String, dynamic> json) {
     return Activity(
-      articleId: json['articleId'],
-      category: json['category'],
-      activityAt: json['activityAt'],
+      articleId: json['articleId'] as int,
+      category: json['category'] as String,
+      activityAt: DateTime.parse(json['activityAt'] as String),
     );
   }
 }

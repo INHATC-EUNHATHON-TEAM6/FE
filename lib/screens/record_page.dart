@@ -35,7 +35,7 @@ class _RecordPageState extends State<RecordPage> {
   int _currentMonth = DateTime.now().month;
   Map<int, List<Activity>> _calendarData = {};
   bool _isLoading = false;
-  final ActivityService _activityService = ActivityService();
+  late final ActivityService _activityService;
 
   @override
   void initState() {
@@ -49,21 +49,11 @@ class _RecordPageState extends State<RecordPage> {
   /// 월이동‧스와이프 시 항상 1일로 포커싱!
   void _initCalendar(int year, int month) async {
     setState(() => _isLoading = true);
-    try {
-      final data = await _activityService.fetchMonthActivities(
-          year, month, widget.accessToken);
-      setState(() {
-        _currentYear = year;
-        _currentMonth = month;
-        _selectedDay = DateTime(year, month, 1);
-        _focusedDay = DateTime(year, month, 1);
-        _calendarData = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      // TODO: 에러처리
-    }
+    final data = await _activityService.fetchMonthActivities(
+      year: year,
+      month: month,
+      accessToken: widget.accessToken,
+    );
   }
 
   void _goNextMonth() {
@@ -432,8 +422,9 @@ class _RecordPageState extends State<RecordPage> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              activity.activityAt,
-                                              style: const TextStyle(
+                                              DateFormat('yyyy.MM.dd HH:mm', 'ko_KR')
+                                                  .format(activity.activityAt.toLocal()),
+                                              style: TextStyle(
                                                 color: Color(0xFF86837F),
                                                 fontWeight: FontWeight.w400,
                                                 fontSize: 12.5,
