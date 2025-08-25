@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../models/activity.dart';
@@ -37,24 +38,101 @@ class _RecordPageState extends State<RecordPage> {
   bool _isLoading = false;
   late final ActivityService _activityService;
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   final now = DateTime.now();
+  //   _focusedDay = now;
+  //   _selectedDay = now;
+  //   _initCalendar(now.year, now.month);
+  // }
+
   @override
   void initState() {
     super.initState();
+    _activityService = ActivityService(
+      http.Client(),
+      baseUrl: "http://43.202.149.234:8080/api/feedback/list",
+    );
+
     final now = DateTime.now();
     _focusedDay = now;
     _selectedDay = now;
-    _initCalendar(now.year, now.month);
+    _initCalendar(now.year, now.month, now.day);
   }
 
+
   /// 월이동‧스와이프 시 항상 1일로 포커싱!
-  void _initCalendar(int year, int month) async {
+  // void _initCalendar(int year, int month) async {
+  //   setState(() => _isLoading = true);
+  //   final data = await _activityService.fetchMonthActivities(
+  //     year: year,
+  //     month: month,
+  //     accessToken: widget.accessToken,
+  //   );
+  // }
+
+  // void _initCalendar(int year, int month, int day) async {
+  //   if (!mounted) return;
+  //   setState(() => _isLoading = true);
+  //   try {
+  //     final data = await _activityService.fetchMonthActivities(
+  //       year: year,
+  //       month: month,
+  //       day: day,
+  //       accessToken: widget.accessToken,
+  //     );
+  //     if (!mounted) return;
+  //     setState(() {
+  //       _currentYear = year;
+  //       _currentMonth = month;
+  //       _selectedDay = DateTime(year, month, 1);
+  //       _focusedDay  = DateTime(year, month, 1);
+  //       _calendarData = data;        // ✅ 데이터 반영
+  //     });
+  //   } catch (e) {
+  //     if (!mounted) return;
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('활동 불러오기 실패: $e')),
+  //     );
+  //     print(e);
+  //   } finally {
+  //     if (!mounted) return;
+  //     setState(() => _isLoading = false);  // ✅ 로딩 해제
+  //   }
+  // }
+
+  void _initCalendar(int year, int month, int day) async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
-    final data = await _activityService.fetchMonthActivities(
-      year: year,
-      month: month,
-      accessToken: widget.accessToken,
-    );
+    try {
+      final data = await _activityService.fetchMonthActivities(
+        year: year,
+        month: month,
+        day: day,                       // ← day 전달(백엔드가 무시해도 OK)
+        accessToken: widget.accessToken,
+      );
+      if (!mounted) return;
+      setState(() {
+        _currentYear = year;
+        _currentMonth = month;
+        _selectedDay = DateTime(year, month, day);  // ← day 반영
+        _focusedDay  = DateTime(year, month, day);
+        _calendarData = data;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('활동 불러오기 실패: $e')),
+      );
+      // 콘솔에서도 상위 몇 글자 확인 가능
+      // print(e);
+    } finally {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
   }
+
 
   void _goNextMonth() {
     setState(() {
@@ -67,7 +145,7 @@ class _RecordPageState extends State<RecordPage> {
       _focusedDay = DateTime(_currentYear, _currentMonth, 1);
       _selectedDay = _focusedDay;
     });
-    _initCalendar(_currentYear, _currentMonth); // 데이터 로드
+    _initCalendar(_currentYear, _currentMonth, 1); // 데이터 로드
   }
 
   void _goPrevMonth() {
@@ -81,7 +159,7 @@ class _RecordPageState extends State<RecordPage> {
       _focusedDay = DateTime(_currentYear, _currentMonth, 1);
       _selectedDay = _focusedDay;
     });
-    _initCalendar(_currentYear, _currentMonth); // 데이터 로드
+    _initCalendar(_currentYear, _currentMonth, 1); // 데이터 로드
   }
 
   List<Activity> get _selectedActivities =>
@@ -210,7 +288,7 @@ class _RecordPageState extends State<RecordPage> {
                                     });
                                   },
                                   onPageChanged: (focusedDay) {
-                                    _initCalendar(focusedDay.year, focusedDay.month);
+                                    _initCalendar(focusedDay.year, focusedDay.month, 1);
                                   },
                                   eventLoader: (day) =>
                                   (_calendarData[day.day] ?? []).isNotEmpty ? ["활동"] : [],
