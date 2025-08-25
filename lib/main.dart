@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String myAccessToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0MDFAdGVzdC5jb20iLCJ1c2VyX2lkIjozLCJhdXRoIjoiIiwiaWF0IjoxNzU2MTI5MjY1LCJleHAiOjE3NTYxMzI4NjV9.4hbsKi8dClTLgK5GBWS9xsIocF35D8nbe0l0WJSgOcHhXWCyM2mc87eARD3B96VkbOWYfdXqc0EUmFPkTEU8kw'; // 실제 토큰 전달!
+    const String myAccessToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0MDFAdGVzdC5jb20iLCJ1c2VyX2lkIjozLCJhdXRoIjoiIiwiaWF0IjoxNzU2MTM3MTM4LCJleHAiOjE3NTYxNDA3Mzh9.s36QEZttoIMWcg5Q2u0mmd3EYrawG_tLK8XvDXaz2dzNumjxedZ9YM0iidjtjezECgEWPv7jXXO7T-rySruEHQ'; // 실제 토큰 전달!
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [

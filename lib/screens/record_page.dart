@@ -162,6 +162,35 @@ class _RecordPageState extends State<RecordPage> {
     _initCalendar(_currentYear, _currentMonth, 1); // 데이터 로드
   }
 
+  Future<void> _fetchForDay(DateTime day) async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      final data = await _activityService.fetchMonthActivities(
+        year: day.year,
+        month: day.month,
+        day: day.day,                  // ← 선택한 날짜 전달 (백엔드 day 필수)
+        accessToken: widget.accessToken,
+      );
+      if (!mounted) return;
+      setState(() {
+        _currentYear  = day.year;
+        _currentMonth = day.month;
+        _selectedDay  = day;
+        _focusedDay   = day;
+        _calendarData = data;          // ← 새 데이터 반영
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('활동 불러오기 실패: $e')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
   List<Activity> get _selectedActivities =>
       _calendarData[_selectedDay.day] ?? [];
 
@@ -282,13 +311,18 @@ class _RecordPageState extends State<RecordPage> {
                                       d.month == _selectedDay.month &&
                                       d.day == _selectedDay.day,
                                   onDaySelected: (selected, focused) {
-                                    setState(() {
-                                      _selectedDay = selected;
-                                      _focusedDay = focused;
-                                    });
+                                    // 같은 날짜를 또 탭해도 중복 호출 안 하도록 가드
+                                    if (isSameDay(selected, _selectedDay)) {
+                                      setState(() {
+                                        _selectedDay = selected;
+                                        _focusedDay  = focused;
+                                      });
+                                      return;
+                                    }
+                                    _fetchForDay(selected);  // ← 날짜 탭 시 API 재호출
                                   },
                                   onPageChanged: (focusedDay) {
-                                    _initCalendar(focusedDay.year, focusedDay.month, 1);
+                                    _initCalendar(focusedDay.year, focusedDay.month, focusedDay.day);
                                   },
                                   eventLoader: (day) =>
                                   (_calendarData[day.day] ?? []).isNotEmpty ? ["활동"] : [],
@@ -475,8 +509,11 @@ class _RecordPageState extends State<RecordPage> {
                                     ),
                                   )
                                       : ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
                                     itemCount: _selectedActivities.length,
                                     itemBuilder: (context, index) {
+                                      debugPrint('selected ${_selectedDay.day} count = ${_selectedActivities.length}');
                                       final activity = _selectedActivities[index];
                                       return Container(
                                         margin: const EdgeInsets.symmetric(vertical: 8),
