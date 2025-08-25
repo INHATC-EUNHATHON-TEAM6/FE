@@ -508,48 +508,52 @@ class _RecordPageState extends State<RecordPage> {
                                       ],
                                     ),
                                   )
-                                      : ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: _selectedActivities.length,
-                                    itemBuilder: (context, index) {
-                                      debugPrint('selected ${_selectedDay.day} count = ${_selectedActivities.length}');
-                                      final activity = _selectedActivities[index];
-                                      return Container(
-                                        margin: const EdgeInsets.symmetric(vertical: 8),
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(13),
-                                          border: Border.all(color: const Color(0xFFECE7DC), width: 1.1),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '${activity.category} · ${index + 1}번째 활동',
-                                              style: const TextStyle(
-                                                color: Color(0xFF663813),
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 15,
-                                                fontFamily: 'Noto Sans KR',
+                                      : Scrollbar(
+                                    thumbVisibility: true, // ⬅︎ 스크롤바(선택)
+                                    child: ListView.builder(
+                                      primary: false, // ⬅︎ 부모 스크롤과 분리(카드 내부 전용 스크롤)
+                                      physics: const AlwaysScrollableScrollPhysics(), // ⬅︎ 스크롤 활성화
+                                      // shrinkWrap: false 가 기본값 (고정 높이에 적합)
+
+                                      itemCount: _selectedActivities.length,
+                                      itemBuilder: (context, index) {
+                                        final activity = _selectedActivities[index];
+                                        return Container(
+                                          margin: const EdgeInsets.symmetric(vertical: 8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(13),
+                                            border: Border.all(color: const Color(0xFFECE7DC), width: 1.1),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${activity.category} · ${index + 1}번째 활동',
+                                                style: const TextStyle(
+                                                  color: Color(0xFF663813),
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 15,
+                                                  fontFamily: 'Noto Sans KR',
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              DateFormat('yyyy.MM.dd HH:mm', 'ko_KR')
-                                                  .format(activity.activityAt.toLocal()),
-                                              style: TextStyle(
-                                                color: Color(0xFF86837F),
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 12.5,
-                                                fontFamily: 'Noto Sans KR',
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                DateFormat('yyyy.MM.dd HH:mm', 'ko_KR')
+                                                    .format(activity.activityAt.toLocal()),
+                                                style: const TextStyle(
+                                                  color: Color(0xFF86837F),
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 12.5,
+                                                  fontFamily: 'Noto Sans KR',
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
                               ],
