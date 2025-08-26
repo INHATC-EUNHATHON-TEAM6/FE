@@ -377,14 +377,24 @@ class _AuthPageState extends State<AuthPage> {
                 children: [
                   Center(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 0, bottom: 40),
-                        child: Image.asset(
+                        padding: const EdgeInsets.only(top: 100, bottom: 40),
+                        child: Column(
+                            children: [Image.asset(
                       'assets/logooooo11.png',
                       width: 200,
                       height: 200,
                     ),
+                          if (!isLogin) ...[
+                  Image.asset(
+                    'assets/lgn.png',
+                    width: 200,
                   ),
-                  ),
+                ],
+                ],
+              ),
+            ),
+          ),
+
                   _Label('아이디(Email)', required: true),
                   SizedBox(height: 6),
                   TextFormField(
@@ -1906,14 +1916,14 @@ void showSuccessDialog(BuildContext context,
                     color: primaryBrown,
                     fontWeight: FontWeight.w900,
                     fontSize: 25,
-                    fontFamily: 'Jalnan2',
+                    fontFamily: 'notosans',
                   ),
                 ),
                 TextSpan(
                   text: " \n\n입력하신 내용을 바탕으로 피드백이 제공됩니다.",
                   style: TextStyle(
                     color: Color(0xFF4D2C13),
-                    fontWeight: FontWeight.w100,
+                    fontWeight: FontWeight.w300,
                     fontSize: 15,
                   ),
                 ),

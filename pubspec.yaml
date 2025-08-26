@@ -71,6 +71,8 @@ flutter:
     - assets/clipboard_icon.png
     - assets/scarplogo1.png
     - assets/logooooo11.png
+    - assets/lgn.png
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
