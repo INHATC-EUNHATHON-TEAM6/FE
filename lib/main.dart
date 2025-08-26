@@ -1236,13 +1236,6 @@ class _ScrapActivityPageState extends State<ScrapActivityPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (article?['title'] != null)
-                        Text(article!['title'],
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18)),
-
-                      SizedBox(height: 10),
                       if (article?['content'] != null)
                         Text(article!['content'],
                             style: TextStyle(fontSize: 15, height: 1.5)),
@@ -3085,35 +3078,57 @@ class _WordbookPageState extends State<WordbookPage> {
                           : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _detailRow('유의어', w.synonym ?? '없음'),
                           Row(
-                          children: [
-                            Expanded(child: _detailRow('반의어', w.antonym ?? '없음')),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(0, 0, 5, 0),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: _detailRow('유의어', (w.synonym == null || w.synonym!.trim().isEmpty) ? '없음' : w.synonym!),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 0, top: 4, right: 2),
                                   child: Text(
-                                  '분야',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 11,
+                                    '분야',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 11,
+                                    ),
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
-                                ),
-                                Text(
-                                  w.field.isNotEmpty ? w.field : '없음',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 13,
+                              ),
+                            ],
+                          ),
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: _detailRow('반의어', (w.antonym == null || w.antonym!.trim().isEmpty) ? '없음' : w.antonym!),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 8, top: 0),
+                                  child: Text(
+                                    w.field.isNotEmpty ? w.field : '없음',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 13,
+                                    ),
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+
+
+
+
                           DottedLine(
                             color: Colors.grey,
                             height: 3,
@@ -3123,7 +3138,8 @@ class _WordbookPageState extends State<WordbookPage> {
                             color: Colors.grey,
                             height: 3,
                           ),
-                          _detailRow('예문', w.example ?? "없음"),
+                          _detailRow('예문', (w.example == null || w.example!.trim().isEmpty) ? '없음' : w.example!),
+
 
                         ],
                       ),
@@ -3149,18 +3165,19 @@ Widget _detailRow(String title, String content) {
           fontSize: 13,
         ),
       ),
-
-      Padding(
+  Expanded( // 반드시 Expanded로 감싸기!
+  child: Padding(
       padding: EdgeInsets.fromLTRB(0, 1, 0, 0),
   child: Text(
           content,
           style: TextStyle(
             fontSize: 13,
             color: Colors.black87,
-
+  ),
+    softWrap: true,
+  ),
   ),
         ),
-      ),
     ],
   );
 }
@@ -3259,8 +3276,15 @@ Future<List<WordItemDto>> fetchWordbook({
 }) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('access_token') ?? '';
-  final url = Uri.parse('http://43.202.149.234:8080/api/wordbook');
+  final baseurl = Uri.parse('http://43.202.149.234:8080/api/wordbook');
   final sortOrder = latestFirst ? "createdAt,desc" : "createdAt,asc";
+  final url = baseurl.replace(
+    queryParameters: {
+      "page": "$page",
+      "size": "$size",
+      "sort": [sortOrder],
+    },
+  );
 
   print('[fetchWordbook] REQUEST URL: $url');
   print('[fetchWordbook] REQUEST BODY: ${jsonEncode({
@@ -3274,15 +3298,11 @@ Future<List<WordItemDto>> fetchWordbook({
   }}');
 
 
-  final response = await http.post(
+  final response = await http.get(
     url,
     headers: {'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',},
-    body: jsonEncode({
-      "page": page,
-      "size": size,
-      "sort": [sortOrder],
-    }),
+      'Authorization': 'Bearer $token',
+    },
   );
 
 
@@ -3500,7 +3520,7 @@ class ScrapHistoryDetailPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${modelSummary ?? activity.category} 뉴스 스크랩 ${activity.order}번째 활동',
+                      '$modelSummary 뉴스 스크랩 ${activity.order}번째 활동',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
@@ -3509,6 +3529,10 @@ class ScrapHistoryDetailPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
+
+
+
+
                     Text(
                       DateFormat('yyyy년 MM월 dd일 HH:mm:ss').format(activity.activityDateTime),
                       style: TextStyle(
