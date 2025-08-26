@@ -400,10 +400,14 @@ class _RecordPageState extends State<RecordPage> {
                                       );
                                     },
                                     todayBuilder: (context, date, _) {
+                                      final hasActivity = (_calendarData[date.day] ?? []).isNotEmpty;
+                                      // 활동이 있으면 주황색 배경 + 갈색 테두리, 없으면 기존 스타일 적용
                                       return _calendarCell(
                                         text: '${date.day}',
                                         color: const Color(0xFF733E17),
-                                        background: const Color(0xFFF7F8FA),
+                                        background: hasActivity
+                                            ? const Color(0x33FF872F) // ← 활동 있으면 주황색(불투명도 조정)
+                                            : const Color(0xFFF7F8FA), // 없으면 기존 밝은 배경
                                         border: Border.all(color: const Color(0xFF733E17), width: 1.4),
                                       );
                                     },
