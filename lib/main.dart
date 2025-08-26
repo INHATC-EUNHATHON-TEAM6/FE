@@ -1036,15 +1036,15 @@ class _MainPageState extends State<MainPage> {
                                   myAnswer: fb['userAnswer'] ?? "",
                                   modelAnswer: fb['aiAnswer'] ?? "",
                                   feedback: fb['aiFeedback'] ?? "",
-                                  similarityScore: fb['evaluationScore'] != null
-                                      ? double.tryParse(
-                                      fb['evaluationScore'].toString())
-                                      : null,
+                                  score: fb['evaluationScore'] != null ? double.tryParse(fb['evaluationScore'].toString()) : null,
+                                  similarityScore: fb['similarityScore'] != null ? double.tryParse(fb['similarityScore'].toString()) : null,
+                                  evaluationScore: fb['evaluationScore']?.toString(),
                                 )
                               );
                               }
                             }
                           }
+
 
 
                         Navigator.push(
@@ -1881,6 +1881,24 @@ void showAlertDialog(BuildContext context, String message) {
     ),
   );
 }
+String userTypeStringToCode(String eval) {
+  final parts = eval.split(';');
+  if (parts.length != 4) return eval;
+  String code = "";
+  for (int i = 0; i < 4; i++) {
+    int? num = int.tryParse(parts[i].trim());
+    if (num == null) return eval;
+    switch (i) {
+      case 0: code += (num >= 5) ? 'O' : 'S'; break;
+      case 1: code += (num >= 5) ? 'A' : 'I'; break;
+      case 2: code += (num >= 5) ? 'C' : 'P'; break;
+      case 3: code += (num >= 5) ? 'T' : 'N'; break;
+    }
+  }
+  return code;
+}
+
+
 
 
 void showSuccessDialog(BuildContext context,
@@ -1979,9 +1997,9 @@ void showSuccessDialog(BuildContext context,
                         myAnswer: fb['userAnswer'] ?? "",
                         modelAnswer: fb['aiAnswer'] ?? "",
                         feedback: fb['aiFeedback'] ?? "",
-                        similarityScore: fb['evaluationScore'] != null
-                            ? double.tryParse(fb['evaluationScore'].toString())
-                            : null,
+                        score: fb['evaluationScore'] != null ? double.tryParse(fb['evaluationScore'].toString()) : null,
+                        similarityScore: fb['similarityScore'] != null ? double.tryParse(fb['similarityScore'].toString()) : null,
+                        evaluationScore: fb['evaluationScore']?.toString(),
                       ),
                     );
                   }
@@ -2025,8 +2043,6 @@ class AiFeedbackPage extends StatelessWidget {
   final List<FeedbackSectionData> feedbackSections;
   final String userSummary;
   final String userOpinion;
-  final double? summaryScore;
-  final String? userType;
 
 
   final String? modelSummary;
@@ -2041,8 +2057,6 @@ class AiFeedbackPage extends StatelessWidget {
     required this.unknownWords,
     required this.userSummary,
     required this.userOpinion,
-    this.summaryScore,
-    this.userType,
     this.modelSummary,
     this.feedbackSummary,
     this.modelOpinion,
@@ -2051,9 +2065,44 @@ class AiFeedbackPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? userType;
+    for (final section in feedbackSections) {
+      if (section.title == "자신의 생각 키우기" && section.userType != null) {
+        userType = section.userType;
+        break;
+      }
+    }
       List<Widget> feedbackWidgets = [];
 
+
+
+
+
       for (final section in feedbackSections) {
+        String? extraBadge;
+
+        switch (section.title) {
+          case "기사 분야 파악하기":
+          case "기사 제목 파악하기":
+          case "주요 키워드 찾기":
+          if (section.similarityScore != null) {
+            extraBadge = '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
+          } else if (section.score != null) {
+            extraBadge = '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
+          }
+          break;
+          case "요약하기":
+            if (section.score != null)
+              extraBadge = '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
+            break;
+          case "자신의 생각 키우기":
+            if (section.evaluationScore != null && section.evaluationScore!.contains(';')) {
+              extraBadge = '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
+            } else if (section.evaluationScore != null) {
+              extraBadge = '사용자 유형: ${section.evaluationScore!}';
+            }
+            break;
+        }
         feedbackWidgets.add(
           FeedbackSectionCard(
             title: section.title,
@@ -2061,6 +2110,7 @@ class AiFeedbackPage extends StatelessWidget {
             modelAnswer: section.modelAnswer,
             feedback: section.feedback,
             similarityScore: section.similarityScore,
+            extraBadge: extraBadge,
           ),
         );
 
@@ -2095,7 +2145,6 @@ class AiFeedbackPage extends StatelessWidget {
           children: [
             // 뉴스 지문
             feedbackNewsSection(newsText),
-
 
             Container(
               width: double.infinity,
@@ -2394,14 +2443,21 @@ class FeedbackSectionData {
   final String myAnswer;
   final String modelAnswer;
   final String feedback;
+  final double? score;
   final double? similarityScore;
+  final String? evaluationScore;
+  final String? userType;
+
 
   FeedbackSectionData({
     required this.title,
     required this.myAnswer,
     required this.modelAnswer,
     required this.feedback,
+    this.score,
     this.similarityScore,
+    this.userType,
+    this.evaluationScore,
   });
 }
 
@@ -2412,6 +2468,7 @@ class FeedbackSectionCard extends StatelessWidget {
   final String modelAnswer;
   final String feedback;
   final double? similarityScore;
+  final String? extraBadge;
 
   const FeedbackSectionCard({
     super.key,
@@ -2420,6 +2477,7 @@ class FeedbackSectionCard extends StatelessWidget {
     required this.modelAnswer,
     required this.feedback,
     this.similarityScore,
+    this.extraBadge,
   });
 
 
@@ -2450,7 +2508,7 @@ class FeedbackSectionCard extends StatelessWidget {
                   fontSize: 18,
                 ),
               ),
-              if (similarityScore != null)
+              if (extraBadge != null)
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
                   decoration: BoxDecoration(
@@ -2458,7 +2516,7 @@ class FeedbackSectionCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
-                    '의미 유사도: ${similarityScore!.toStringAsFixed(2)}',
+                    extraBadge!,
                     style: TextStyle(
                       fontWeight: FontWeight.w400,
                       fontFamily: 'Jalnan2',
@@ -3463,12 +3521,41 @@ class ScrapHistoryDetailPage extends StatelessWidget {
       List<Widget> feedbackWidgets = [];
       for (var i = 0; i < feedbackSections.length; i++) {
         final section = feedbackSections[i];
+        String? extraBadge;
+        switch (section.title) {
+          case "기사 분야 파악하기":
+          case "기사 제목 파악하기":
+          case "주요 키워드 찾기":
+            if (section.similarityScore != null) {
+              extraBadge =
+              '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
+            } else if (section.score != null) {
+              extraBadge =
+              '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
+            }
+            break;
+          case "요약하기":
+            if (section.score != null)
+              extraBadge =
+              '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
+            break;
+          case "자신의 생각 키우기":
+            if (section.evaluationScore != null &&
+                section.evaluationScore!.contains(';')) {
+              extraBadge =
+              '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
+            } else if (section.evaluationScore != null) {
+              extraBadge = '사용자 유형: ${section.evaluationScore!}';
+            }
+            break;
+        }
         feedbackWidgets.add(
           FeedbackSectionCard(
             title: section.title,
             myAnswer: section.myAnswer,
             modelAnswer: section.modelAnswer,
             feedback: section.feedback,
+            extraBadge: extraBadge,
             similarityScore: section.similarityScore,
           ),
         );
