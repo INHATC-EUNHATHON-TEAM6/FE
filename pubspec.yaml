@@ -1,8 +1,8 @@
-name: untitled1
+name: words_hanjoom
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -27,17 +27,21 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
+
 dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.0.4
-  intl: ^0.18.0
-  http: ^1.2.0
+  intl: ^0.20.2
   shared_preferences: ^2.0.13
-
+  table_calendar: ^3.0.9
+  flutter_localizations:
+    sdk: flutter
+  flutter_svg: ^2.0.10
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:
@@ -72,8 +76,13 @@ flutter:
     - assets/scarplogo1.png
     - assets/logooooo11.png
     - assets/lgn.png
+    - assets/fonts/
+    # icons
 
-  # An image asset can refer to one or more resolution-specific "variants", see
+    # logos
+
+
+    # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
   # For details regarding adding assets from package dependencies, see
@@ -96,11 +105,12 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   fonts:
-      - family: Jalnan2
-        fonts:
-          - asset: assets/fonts/Jalnan2.otf
-          - asset: assets/fonts/notosans.ttf
-
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+    - family: Jalnan 2
+      fonts:
+        - asset: assets/fonts/Jalnan2TTF.ttf
+    - family: Noto Sans KR
+      fonts:
+        - asset: assets/fonts/NotoSansKR-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansKR-Bold.ttf
+          weight: 700
