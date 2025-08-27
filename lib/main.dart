@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/record_page.dart';
 
 final Color primaryBrown = Color(0xFF733E17);
 final Color bgColor = Color(0xFFFBFAF3);
@@ -1004,91 +1005,12 @@ class _MainPageState extends State<MainPage> {
                                         await SharedPreferences.getInstance();
                                     final token =
                                         prefs.getString('access_token') ?? '';
-                                    final activity = todaysActivities.first;
-
-                                    final feedbackData =
-                                        await fetchFeedbackDetail(
-                                          accessToken: token,
-                                          articleId: activity.articleId,
-                                        );
-
-                                    List<FeedbackSectionData> feedbackSections =
-                                        [];
-                                    if (feedbackData != null &&
-                                        feedbackData['feedbacks'] != null) {
-                                      for (final fb
-                                          in feedbackData['feedbacks']) {
-                                        print(
-                                          'Received activityType: ${fb['activityType']}',
-                                        );
-                                        final type = (fb['activityType'] ?? '')
-                                            .toString()
-                                            .toUpperCase();
-                                        String? titleStr;
-                                        switch (type) {
-                                          case 'CATEGORY':
-                                            titleStr = "기사 분야 파악하기";
-                                            break;
-                                          case 'TITLE':
-                                            titleStr = "기사 제목 파악하기";
-                                            break;
-                                          case 'KEYWORD':
-                                            titleStr = "주요 키워드 찾기";
-                                            break;
-                                          case 'SUMMARY':
-                                            titleStr = "요약하기";
-                                            break;
-                                          case 'THOUGHT_SUMMARY':
-                                            titleStr = "자신의 생각 키우기";
-                                            break;
-                                          default:
-                                            titleStr = null;
-                                        }
-                                        if (titleStr != null) {
-                                          feedbackSections.add(
-                                            FeedbackSectionData(
-                                              title: titleStr,
-                                              myAnswer: fb['userAnswer'] ?? "",
-                                              modelAnswer: fb['aiAnswer'] ?? "",
-                                              feedback: fb['aiFeedback'] ?? "",
-                                              score:
-                                                  fb['evaluationScore'] != null
-                                                  ? double.tryParse(
-                                                      fb['evaluationScore']
-                                                          .toString(),
-                                                    )
-                                                  : null,
-                                              similarityScore:
-                                                  fb['similarityScore'] != null
-                                                  ? double.tryParse(
-                                                      fb['similarityScore']
-                                                          .toString(),
-                                                    )
-                                                  : null,
-                                              evaluationScore:
-                                                  fb['evaluationScore']
-                                                      ?.toString(),
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    }
-
+                                    if (!mounted) return;
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => ScrapHistoryDetailPage(
-                                          activity: activity,
-                                          feedbackSections: feedbackSections,
-                                          unknownWords: activity.unknownWords,
-                                          keywords: activity.keywords,
-                                          userSummary: activity.summary,
-                                          userOpinion: activity.opinion,
-                                          modelSummary: '',
-                                          feedbackSummary: '',
-                                          modelOpinion: '',
-                                          feedbackOpinion: '',
-                                        ),
+                                        builder: (_) =>
+                                            RecordPage(accessToken: token),
                                       ),
                                     );
                                   },

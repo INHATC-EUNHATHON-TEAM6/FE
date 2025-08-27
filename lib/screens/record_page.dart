@@ -222,7 +222,7 @@ class _RecordPageState extends State<RecordPage> {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
-                            fontFamily: 'Jalnan 2',
+                            fontFamily: 'Jalnan2',
                             fontWeight: FontWeight.w400,
                             letterSpacing: 1.0,
                           ),
@@ -292,7 +292,7 @@ class _RecordPageState extends State<RecordPage> {
                                                 '${_currentYear}년 ${_currentMonth}월',
                                                 style: const TextStyle(
                                                   fontSize: 18,
-                                                  fontFamily: 'Jalnan 2',
+                                                  fontFamily: 'Jalnan2',
                                                   fontWeight: FontWeight.w500,
                                                   color: Color(0xFF733E17),
                                                 ),
@@ -518,7 +518,7 @@ class _RecordPageState extends State<RecordPage> {
                                             '오늘의 활동',
                                             style: TextStyle(
                                               color: Color(0xFF733E17),
-                                              fontFamily: 'Jalnan 2',
+                                              fontFamily: 'Jalnan2',
                                               fontWeight: FontWeight.w500,
                                               fontSize: 18,
                                               letterSpacing: 0.15,

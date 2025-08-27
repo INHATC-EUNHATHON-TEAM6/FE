@@ -76,7 +76,6 @@ flutter:
     - assets/scarplogo1.png
     - assets/logooooo11.png
     - assets/lgn.png
-    - assets/fonts/
     # icons
 
     # logos
@@ -107,10 +106,13 @@ flutter:
   fonts:
     - family: Jalnan2
       fonts:
-        - asset: assets/fonts/Jalnan2TTF.ttf
+        - asset: assets/fonts/Jalnan2.otf
+        - asset: assets/fonts/notosans.ttf
     - family: Noto Sans KR
       fonts:
         - asset: assets/fonts/NotoSansKR-Medium.ttf
           weight: 500
         - asset: assets/fonts/NotoSansKR-Bold.ttf
           weight: 700
+
+
