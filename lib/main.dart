@@ -2177,7 +2177,7 @@ class AiFeedbackPage extends StatelessWidget {
                     padding: EdgeInsets.fromLTRB(17, 8, 17, 5),
                     decoration: BoxDecoration(
                       color: Color(0xFFFFDD94),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '스크랩 활동',
@@ -2203,16 +2203,15 @@ class AiFeedbackPage extends StatelessWidget {
 
 //피드백페이지 뉴스지문
 Widget feedbackNewsSection(String newsText) {
-  const double scrollbarThickness = 8;
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       SizedBox(height: 15),
       Container(
-        padding: EdgeInsets.fromLTRB(17, 8, 17, 5),
+        padding: EdgeInsets.fromLTRB(14, 8, 14, 5),
         decoration: BoxDecoration(
           color: Color(0xFFFFDD94),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           '뉴스 지문',
@@ -3526,189 +3525,270 @@ List<ScrapActivity> get todaysActivities => allActivities
     .toList();
 
 class ScrapHistoryDetailPage extends StatelessWidget {
-  final ScrapActivity activity;
-  final List<FeedbackSectionData> feedbackSections;
-  final List<String> unknownWords;
-  final String userSummary;
-  final String userOpinion;
-  final String? modelSummary;
-  final String? feedbackSummary;
-  final String? modelOpinion;
-  final String? feedbackOpinion;
-
-  final List<String> keywords;
+  final String articleId;
+  final String accessToken;
+  final int order;
+  final DateTime activityAt;
 
   const ScrapHistoryDetailPage({
-    Key? key,
-    required this.activity,
-    required this.feedbackSections,
-    required this.unknownWords,
-    required this.userSummary,
-    required this.userOpinion,
-    required this.keywords,
-    this.modelSummary,
-    this.feedbackSummary,
-    this.modelOpinion,
-    this.feedbackOpinion,
-  }) : super(key: key);
+    super.key,
+    required this.articleId,
+    required this.accessToken,
+    required this.order,
+    required this.activityAt,
+  });
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> feedbackWidgets = [];
-    for (var i = 0; i < feedbackSections.length; i++) {
-      final section = feedbackSections[i];
-      String? extraBadge;
-      switch (section.title) {
-        case "기사 분야 파악하기":
-        case "기사 제목 파악하기":
-        case "주요 키워드 찾기":
-          if (section.similarityScore != null) {
-            extraBadge =
-                '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
-          } else if (section.score != null) {
-            extraBadge =
-                '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
-          }
-          break;
-        case "요약하기":
-          if (section.score != null)
-            extraBadge = '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
-          break;
-        case "자신의 생각 키우기":
-          if (section.evaluationScore != null &&
-              section.evaluationScore!.contains(';')) {
-            extraBadge =
-                '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
-          } else if (section.evaluationScore != null) {
-            extraBadge = '사용자 유형: ${section.evaluationScore!}';
-          }
-          break;
-      }
-      feedbackWidgets.add(
-        FeedbackSectionCard(
-          title: section.title,
-          myAnswer: section.myAnswer,
-          modelAnswer: section.modelAnswer,
-          feedback: section.feedback,
-          extraBadge: extraBadge,
-          similarityScore: section.similarityScore,
-        ),
-      );
-      if (section.title == "주요 키워드 찾기") {
-        feedbackWidgets.add(UnknownWordsCard(words: unknownWords));
-      }
-    }
     return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: bgColor,
-        automaticallyImplyLeading: false,
-        leadingWidth: 105,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 11, top: 10, bottom: 8),
-          child: TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFFFFF6DF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.9),
-              minimumSize: const Size(73, 38),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "돌아가기",
-              style: TextStyle(
-                color: Color(0xFF3A0B0B),
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                fontFamily: 'Pretendard',
-                letterSpacing: -0.1,
-              ),
-            ),
-          ),
+      backgroundColor: const Color(0xFFFBFAF3),
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: fetchFeedbackDetail(
+          accessToken: accessToken,
+          articleId: int.parse(articleId),
         ),
-      ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 18),
-              decoration: BoxDecoration(
-                color: primaryBrown,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(15, 17, 15, 13),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$modelSummary 뉴스 스크랩 ${activity.order}번째 활동',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 17,
-                        fontFamily: 'Jalnan2',
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-
-                    Text(
-                      DateFormat(
-                        'yyyy년 MM월 dd일 HH:mm:ss',
-                      ).format(activity.activityDateTime),
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            feedbackNewsSection(activity.content),
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-              ),
+          if (snapshot.hasError) {
+            return Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(17, 8, 17, 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFDD94),
-                      borderRadius: BorderRadius.circular(20),
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    '데이터를 불러오는데 실패했습니다',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: const Text(
-                      '스크랩 활동',
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${snapshot.error}',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const Center(child: Text('데이터가 없습니다'));
+          }
+
+          final data = snapshot.data!;
+
+          List<FeedbackSectionData> feedbackSections = [];
+          if (data['feedbacks'] != null) {
+            for (final fb in data['feedbacks']) {
+              print('Received activityType: ${fb['activityType']}');
+              final type = (fb['activityType'] ?? '').toString().toUpperCase();
+              String? titleStr;
+              switch (type) {
+                case 'CATEGORY':
+                  titleStr = "기사 분야 파악하기";
+                  break;
+                case 'TITLE':
+                  titleStr = "기사 제목 파악하기";
+                  break;
+                case 'KEYWORD':
+                  titleStr = "주요 키워드 찾기";
+                  break;
+                case 'UNKNOWN_WORD':
+                  titleStr = "모르는 어휘 목록";
+                  break;
+                case 'SUMMARY':
+                  titleStr = "요약하기";
+                  break;
+                case 'THOUGHT_SUMMARY':
+                  titleStr = "자신의 생각 키우기";
+                  break;
+                default:
+                  titleStr = null;
+              }
+              if (titleStr != null) {
+                feedbackSections.add(
+                  FeedbackSectionData(
+                    title: titleStr,
+                    myAnswer: fb['userAnswer'] ?? "",
+                    modelAnswer: fb['aiAnswer'] ?? "",
+                    feedback: fb['aiFeedback'] ?? "",
+                    score: fb['evaluationScore'] != null
+                        ? double.tryParse(fb['evaluationScore'].toString())
+                        : null,
+                    similarityScore: fb['similarityScore'] != null
+                        ? double.tryParse(fb['similarityScore'].toString())
+                        : null,
+                    evaluationScore: fb['evaluationScore']?.toString(),
+                  ),
+                );
+              }
+              print('Added section with title: $titleStr');
+            }
+          }
+          List<Widget> feedbackWidgets = [];
+
+          for (final section in feedbackSections) {
+            String? extraBadge;
+
+            switch (section.title) {
+              case "기사 분야 파악하기":
+              case "기사 제목 파악하기":
+              case "주요 키워드 찾기":
+                if (section.similarityScore != null) {
+                  extraBadge =
+                      '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
+                } else if (section.score != null) {
+                  extraBadge =
+                      '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
+                }
+                break;
+              case "요약하기":
+                if (section.score != null)
+                  extraBadge =
+                      '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
+                break;
+              case "자신의 생각 키우기":
+                if (section.evaluationScore != null &&
+                    section.evaluationScore!.contains(';')) {
+                  extraBadge =
+                      '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
+                } else if (section.evaluationScore != null) {
+                  extraBadge = '사용자 유형: ${section.evaluationScore!}';
+                }
+                break;
+            }
+            if (section.title == "모르는 어휘 목록") {
+              feedbackWidgets.add(
+                UnknownWordsCard(words: section.myAnswer.split(",")),
+              );
+            } else {
+              feedbackWidgets.add(
+                FeedbackSectionCard(
+                  title: section.title,
+                  myAnswer: section.myAnswer,
+                  modelAnswer: section.modelAnswer,
+                  feedback: section.feedback,
+                  similarityScore: section.similarityScore,
+                  extraBadge: extraBadge,
+                ),
+              );
+            }
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 46),
+
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 7,
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFFFF2C9),
+                      borderRadius: BorderRadius.circular(5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          offset: Offset(0, 1),
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '돌아가기',
                       style: TextStyle(
-                        color: Color(0xFF733E17),
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                        fontFamily: 'Jalnan2',
-                        letterSpacing: -0.5,
+                        color: Color(0xFF3A0B0B),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        letterSpacing: 0,
+                        fontFamily: 'Noto Sans KR',
                       ),
                     ),
                   ),
-                  ...feedbackWidgets,
-                ],
-              ),
+                ),
+
+                SizedBox(height: 11),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 13,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF733E17),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${data['categoryName']} 뉴스 스크랩 $order번째 활동',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontFamily: "Jalnan2",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat(
+                          'yyyy년 MM월 dd일 HH:mm',
+                          'ko_KR',
+                        ).format(activityAt),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 12,
+                          fontFamily: "Noto Sans KR",
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 3),
+                feedbackNewsSection(data['articleBody']),
+                // 피드백 섹션들
+                Container(
+                  padding: EdgeInsets.fromLTRB(14, 8, 14, 5),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFFDD94),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '스크랩 활동',
+                    style: TextStyle(
+                      color: primaryBrown,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      fontFamily: 'Jalnan2',
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+
+                ...feedbackWidgets,
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

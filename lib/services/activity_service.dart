@@ -13,14 +13,15 @@ class ActivityService {
   Future<Map<int, List<Activity>>> fetchMonthActivities({
     required int year,
     required int month,
-    required int day,                 // ✅ 필수로 변경
+    required int day, // ✅ 필수: 백엔드 요구
     required String accessToken,
   }) async {
-    final uri = Uri.parse(baseUrl).replace(queryParameters: {
+    final qp = <String, String>{
       'year': '$year',
       'month': '$month',
-      'day': '$day',                  // ✅ 항상 포함
-    });
+      'day': '$day',
+    };
+    final uri = Uri.parse(baseUrl).replace(queryParameters: qp);
 
     final resp = await _client.get(
       uri,
@@ -42,7 +43,8 @@ class ActivityService {
     return _parseMonthActivitiesFlexible(resp.body);
   }
 
-  String _peek(String s, [int n = 200]) => s.length <= n ? s : s.substring(0, n);
+  String _peek(String s, [int n = 200]) =>
+      s.length <= n ? s : s.substring(0, n);
 }
 
 /// 백엔드가 아래 둘 중 아무거나 내려줘도 파싱되도록 유연 처리:
@@ -54,7 +56,9 @@ Map<int, List<Activity>> _parseMonthActivitiesFlexible(String body) {
   if (decoded is! Map) return <int, List<Activity>>{};
 
   // B 형식 지원
-  final root = (decoded['monthActivity'] is Map) ? decoded['monthActivity'] as Map : decoded;
+  final root = (decoded['monthActivity'] is Map)
+      ? decoded['monthActivity'] as Map
+      : decoded;
 
   final result = <int, List<Activity>>{};
   for (final entry in root.entries) {
@@ -65,10 +69,11 @@ Map<int, List<Activity>> _parseMonthActivitiesFlexible(String body) {
     final day = int.tryParse(key.toString());
     if (day == null) continue;
 
-    final list = (val as List?)
-        ?.whereType<Map>()
-        .map((e) => Activity.fromJson(e.cast<String, dynamic>()))
-        .toList(growable: false) ??
+    final list =
+        (val as List?)
+            ?.whereType<Map>()
+            .map((e) => Activity.fromJson(e.cast<String, dynamic>()))
+            .toList(growable: false) ??
         const <Activity>[];
 
     result[day] = list;
