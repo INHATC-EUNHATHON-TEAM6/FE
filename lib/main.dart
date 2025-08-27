@@ -6,8 +6,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
 final Color primaryBrown = Color(0xFF733E17);
 final Color bgColor = Color(0xFFFBFAF3);
 final Color borderColor = Color(0xFFE0DAD3);
@@ -26,9 +24,8 @@ final List<String> interestSubjects = [
   '금융',
   '산업',
   '사회',
-  '문화'
+  '문화',
 ];
-
 
 List<String> globalUnknownWords = [];
 void addUnknownWord(String word) {
@@ -40,11 +37,6 @@ void addUnknownWord(String word) {
 List<ScrapActivity> allActivities = [];
 List<FeedbackSectionData> myFeedbackSections = [];
 List<String> myUnknownWords = [];
-
-
-
-
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,10 +86,7 @@ Future<String?> loginUser({
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      "loginId": loginId,
-      "password": password,
-    }),
+    body: jsonEncode({"loginId": loginId, "password": password}),
   );
   if (response.statusCode == 200) {
     var data = jsonDecode(response.body);
@@ -163,43 +152,34 @@ class LogoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future.delayed(Duration(seconds: 2), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => AuthPage()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => AuthPage()));
     });
-
 
     return Scaffold(
       backgroundColor: bgColor,
       body: Center(
-        child: Image.asset(
-          'assets/logooooo11.png',
-          width: 232,
-          height: 232,
-        ),
+        child: Image.asset('assets/logooooo11.png', width: 232, height: 232),
       ),
     );
   }
 }
-
-
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
   @override
   _AuthPageState createState() => _AuthPageState();
-
 }
-
 
 class _AuthPageState extends State<AuthPage> {
   List<String> selectedInterests = [];
 
-  List<int> get selectedCategoryIds =>
-      selectedInterests.map((name) => categoryNameToId[name] ?? 0)
-          .where((id) => id != 0)
-          .toList();
+  List<int> get selectedCategoryIds => selectedInterests
+      .map((name) => categoryNameToId[name] ?? 0)
+      .where((id) => id != 0)
+      .toList();
 
   final Map<String, int> categoryNameToId = {
     '기초•응용과학': 1,
@@ -214,7 +194,9 @@ class _AuthPageState extends State<AuthPage> {
     '사회': 10,
     '문화': 11,
   };
-  final pattern = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{10,20}$');
+  final pattern = RegExp(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{10,20}$',
+  );
 
   bool isLogin = true;
   bool _isLoading = false;
@@ -227,21 +209,19 @@ class _AuthPageState extends State<AuthPage> {
   final TextEditingController nicknameController = TextEditingController();
   final TextEditingController pwCheckController = TextEditingController();
 
-
   void toggle() {
     setState(() {
       isLogin = !isLogin;
     });
   }
-//팝업
+
+  //팝업
   void _showAlert(BuildContext context, String message, VoidCallback? onOk) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         elevation: 12,
         backgroundColor: Colors.white,
         child: Container(
@@ -298,15 +278,15 @@ class _AuthPageState extends State<AuthPage> {
 
     if (isLogin) {
       if (loginId.isEmpty && password.isEmpty) {
-        _showAlert(context, '아이디와 비밀번호를\n 입력하지 않았습니다.',null);
+        _showAlert(context, '아이디와 비밀번호를\n 입력하지 않았습니다.', null);
         return;
       }
       if (loginId.isEmpty) {
-        _showAlert(context,'아이디(이메일)를\n 입력하지 않았습니다.',null);
+        _showAlert(context, '아이디(이메일)를\n 입력하지 않았습니다.', null);
         return;
       }
       if (password.isEmpty) {
-        _showAlert(context,'비밀번호를\n 입력하지 않았습니다.',null);
+        _showAlert(context, '비밀번호를\n 입력하지 않았습니다.', null);
         return;
       }
     }
@@ -315,38 +295,38 @@ class _AuthPageState extends State<AuthPage> {
       setState(() => _isLoading = true);
       try {
         await Future.delayed(Duration(seconds: 2)); //로딩 딜레이
-      if (isLogin) {
-        final token = await loginUser(loginId: loginId, password: password);
-        if (token != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('access_token', token);
+        if (isLogin) {
+          final token = await loginUser(loginId: loginId, password: password);
+          if (token != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('access_token', token);
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => MainPage()),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MainPage()),
+            );
+          } else {
+            _showAlert(context, '로그인 실패: 아이디 또는 비밀번호를 확인하세요.', null);
+          }
+        } else {
+          final success = await registerUser(
+            loginId: loginId,
+            password: password,
+            passwordCheck: pwCheckController.text,
+            name: nameController.text,
+            nickname: nicknameController.text,
+            birthDate: birthController.text,
+            careerGoal: careerController.text,
+            categoryIds: selectedCategoryIds,
           );
-        } else {
-          _showAlert(context,'로그인 실패: 아이디 또는 비밀번호를 확인하세요.',null);
+          if (success) {
+            _showAlert(context, '회원가입 성공! 이제 로그인 하세요.', null);
+            setState(() => isLogin = true);
+          } else {
+            _showAlert(context, '회원가입 실패: \n입력값을 확인하세요.', null);
+          }
         }
-      } else {
-        final success = await registerUser(
-          loginId: loginId,
-          password: password,
-          passwordCheck: pwCheckController.text,
-          name: nameController.text,
-          nickname: nicknameController.text,
-          birthDate: birthController.text,
-          careerGoal: careerController.text,
-          categoryIds: selectedCategoryIds,
-        );
-        if (success) {
-          _showAlert(context, '회원가입 성공! 이제 로그인 하세요.', null);
-          setState(() => isLogin = true);
-        } else {
-          _showAlert(context, '회원가입 실패: \n입력값을 확인하세요.', null);
-        }
-       }
-      }finally {
+      } finally {
         setState(() => _isLoading = false);
       }
     }
@@ -360,110 +340,75 @@ class _AuthPageState extends State<AuthPage> {
       body: Stack(
         children: [
           Center(
-        child: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.only(left: 8, right: 8, top: 1),
-            padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 100, bottom: 40),
-                        child: Column(
-                            children: [Image.asset(
-                      'assets/logooooo11.png',
-                      width: 200,
-                      height: 200,
-                    ),
-                          if (!isLogin) ...[
-                  Image.asset(
-                    'assets/lgn.png',
-                    width: 200,
-                  ),
-                ],
-                ],
-              ),
-            ),
-          ),
-
-                  _Label('아이디(Email)', required: true),
-                  SizedBox(height: 6),
-                  TextFormField(
-
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Color(0xFFEEEFEF),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Color(0xFFE3E3E3),
-                          width: 1.7,
+            child: SingleChildScrollView(
+              child: Container(
+                margin: EdgeInsets.only(left: 8, right: 8, top: 1),
+                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 100, bottom: 40),
+                          child: Column(
+                            children: [
+                              Image.asset(
+                                'assets/logooooo11.png',
+                                width: 200,
+                                height: 200,
+                              ),
+                              if (!isLogin) ...[
+                                Image.asset('assets/lgn.png', width: 200),
+                              ],
+                            ],
+                          ),
                         ),
-                      ),hintText: '아이디를 입력하세요.',
-                      hintStyle: TextStyle(
-                        color: Color(0xFFB0B0B0),
-                        fontWeight: FontWeight.w400,
                       ),
-                    ),
 
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return '이메일을 입력해 주세요';
-                      if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v)) return '이메일 형식이 올바르지 않아요';
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  _Label('비밀번호', required: true),
-                  SizedBox(height: 6),
-                  TextFormField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Color(0xFFEEEFEF),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Color(0xFFE3E3E3),
-                            width: 1.7,
+                      _Label('아이디(Email)', required: true),
+                      SizedBox(height: 6),
+                      TextFormField(
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Color(0xFFEEEFEF),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Color(0xFFE3E3E3),
+                              width: 1.7,
+                            ),
+                          ),
+                          hintText: '아이디를 입력하세요.',
+                          hintStyle: TextStyle(
+                            color: Color(0xFFB0B0B0),
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                        hintText: '비밀번호를 입력하세요.',
-                        hintStyle: TextStyle(
-                        color: Color(0xFFB0B0B0),
-                    fontWeight: FontWeight.w400,
-                  ),),
-                    validator: (v) {
-                      if (v == null || v.length < 10)
-                        return '숫자, 영어 대소문자, 특수문자를 각 1자 이상을 포함한\n10자~20자의 비밀번호를 입력하세요.';
-                      if (v.length > 20) {
-                        return '비밀번호는 10자 이상 20자 이하여야 합니다.';
-                      }
-                      if (!pattern.hasMatch(v)) {
-                          return '숫자, 대문자, 소문자, 특수문자를 모두 포함해야 합니다.';
-                        }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  if (!isLogin) ...[
-                    _Label('비밀번호 확인', required: true),
-                    SizedBox(height: 6),
-                    TextFormField(
-                      controller: pwCheckController,
-                      obscureText: true,
-                      decoration: InputDecoration(
+
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return '이메일을 입력해 주세요';
+                          if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v))
+                            return '이메일 형식이 올바르지 않아요';
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      _Label('비밀번호', required: true),
+                      SizedBox(height: 6),
+                      TextFormField(
+                        controller: passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
                           filled: true,
                           fillColor: Color(0xFFEEEFEF),
                           enabledBorder: OutlineInputBorder(
@@ -472,213 +417,264 @@ class _AuthPageState extends State<AuthPage> {
                               color: Color(0xFFE3E3E3),
                               width: 1.7,
                             ),
-                          ),hintText: '비밀번호를 다시 입력하세요',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFB0B0B0),
-                          fontWeight: FontWeight.w400,
-                        ),),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return '이전에 입력한 비밀번호를 한 번 더 입력하세요.';
-                        if (v != passwordController.text) return '비밀번호가 일치하지 않습니다';
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    _Label('닉네임', required: true),
-                    SizedBox(height: 6),
-                    TextFormField(
-                      controller: nicknameController,
-                      decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFEEEFEF),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Color(0xFFE3E3E3),
-                              width: 1.7,
-                            ),
-                          ),hintText: '닉네임을 입력하세요.',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFB0B0B0),
-                          fontWeight: FontWeight.w400,
-                        ),),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return '닉네임을 입력해 주세요';
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    _Label('이름', required: true),
-                    SizedBox(height: 6),
-                    TextFormField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFEEEFEF),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Color(0xFFE3E3E3),
-                              width: 1.7,
-                            ),
-                          ),hintText: '이름을 입력하세요.',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFB0B0B0),
-                          fontWeight: FontWeight.w400,
-                        ),),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return '이름을 입력해 주세요';
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    _Label('생년월일', required: true),
-                    SizedBox(height: 6),
-                    TextFormField(
-                      controller: birthController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFEEEFEF),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Color(0xFFE3E3E3),
-                              width: 1.7,
-                            ),
-                          ),hintText: '생년월일을 입력하세요',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFB0B0B0),
-                          fontWeight: FontWeight.w400,
-                        ),),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'YYYY-MM-DD 형식으로 입력하세요.';
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    _Label('관심진로', required: true),
-                    SizedBox(height: 6),
-                    TextFormField(
-                      controller: careerController,
-                      decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Color(0xFFEEEFEF),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Color(0xFFE3E3E3),
-                              width: 1.7,
-                            ),
-                          ),hintText: '관심진로를 입력하세요',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFB0B0B0),
-                          fontWeight: FontWeight.w400,
-                        ),),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return '관심진로를 입력하세요.';
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    _Label('관심 분야', required: true),
-                    SizedBox(height: 3),
-                    Wrap(
-                      spacing: 3,
-                      runSpacing: -5,
-                      children: interestSubjects.map((subject) {
-                        final isSelected = selectedInterests.contains(subject);
-                        return FilterChip(
-                          label: Text(subject),
-                          selected: isSelected,
-                          selectedColor: Color(0xFFFFE89E),
-                          backgroundColor: Colors.grey.shade200,
-                          labelStyle: TextStyle(
-                            color: isSelected ? Colors.black : Colors.black,
                           ),
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedInterests.add(subject);
-                              } else {
-                                selectedInterests.remove(subject);
-                              }
-                            });
+                          hintText: '비밀번호를 입력하세요.',
+                          hintStyle: TextStyle(
+                            color: Color(0xFFB0B0B0),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.length < 10)
+                            return '숫자, 영어 대소문자, 특수문자를 각 1자 이상을 포함한\n10자~20자의 비밀번호를 입력하세요.';
+                          if (v.length > 20) {
+                            return '비밀번호는 10자 이상 20자 이하여야 합니다.';
+                          }
+                          if (!pattern.hasMatch(v)) {
+                            return '숫자, 대문자, 소문자, 특수문자를 모두 포함해야 합니다.';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      if (!isLogin) ...[
+                        _Label('비밀번호 확인', required: true),
+                        SizedBox(height: 6),
+                        TextFormField(
+                          controller: pwCheckController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Color(0xFFEEEFEF),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFE3E3E3),
+                                width: 1.7,
+                              ),
+                            ),
+                            hintText: '비밀번호를 다시 입력하세요',
+                            hintStyle: TextStyle(
+                              color: Color(0xFFB0B0B0),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty)
+                              return '이전에 입력한 비밀번호를 한 번 더 입력하세요.';
+                            if (v != passwordController.text)
+                              return '비밀번호가 일치하지 않습니다';
+                            return null;
                           },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
+                        ),
+                        SizedBox(height: 16),
+                        _Label('닉네임', required: true),
+                        SizedBox(height: 6),
+                        TextFormField(
+                          controller: nicknameController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Color(0xFFEEEFEF),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFE3E3E3),
+                                width: 1.7,
+                              ),
+                            ),
+                            hintText: '닉네임을 입력하세요.',
+                            hintStyle: TextStyle(
+                              color: Color(0xFFB0B0B0),
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                    SizedBox(height: 35),
-                  ],
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryBrown,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      minimumSize: Size(double.infinity, 54),
-                      textStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                    ),
-                    child: Text(
-                      _isLoading
-                          ? (isLogin ? '로그인 중 ...' : '회원가입 처리 중 ...')
-                          : (isLogin ? '로그인' : '회원가입 완료'),
-                    ),
-                  ),
-
-                  SizedBox(height: 10),
-                  Center(
-                    child: OutlinedButton(
-                      onPressed: toggle,
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        side: BorderSide(color: primaryBrown, width: 2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return '닉네임을 입력해 주세요';
+                            return null;
+                          },
                         ),
-                        minimumSize: Size(double.infinity, 54),
-                      ),
-                      child: Text(
-                        isLogin ? '회원가입' : '이미 계정이 있나요? 로그인',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: primaryBrown,
+                        SizedBox(height: 16),
+                        _Label('이름', required: true),
+                        SizedBox(height: 6),
+                        TextFormField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Color(0xFFEEEFEF),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFE3E3E3),
+                                width: 1.7,
+                              ),
+                            ),
+                            hintText: '이름을 입력하세요.',
+                            hintStyle: TextStyle(
+                              color: Color(0xFFB0B0B0),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return '이름을 입력해 주세요';
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        _Label('생년월일', required: true),
+                        SizedBox(height: 6),
+                        TextFormField(
+                          controller: birthController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Color(0xFFEEEFEF),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFE3E3E3),
+                                width: 1.7,
+                              ),
+                            ),
+                            hintText: '생년월일을 입력하세요',
+                            hintStyle: TextStyle(
+                              color: Color(0xFFB0B0B0),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty)
+                              return 'YYYY-MM-DD 형식으로 입력하세요.';
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        _Label('관심진로', required: true),
+                        SizedBox(height: 6),
+                        TextFormField(
+                          controller: careerController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Color(0xFFEEEFEF),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Color(0xFFE3E3E3),
+                                width: 1.7,
+                              ),
+                            ),
+                            hintText: '관심진로를 입력하세요',
+                            hintStyle: TextStyle(
+                              color: Color(0xFFB0B0B0),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return '관심진로를 입력하세요.';
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        _Label('관심 분야', required: true),
+                        SizedBox(height: 3),
+                        Wrap(
+                          spacing: 3,
+                          runSpacing: -5,
+                          children: interestSubjects.map((subject) {
+                            final isSelected = selectedInterests.contains(
+                              subject,
+                            );
+                            return FilterChip(
+                              label: Text(subject),
+                              selected: isSelected,
+                              selectedColor: Color(0xFFFFE89E),
+                              backgroundColor: Colors.grey.shade200,
+                              labelStyle: TextStyle(
+                                color: isSelected ? Colors.black : Colors.black,
+                              ),
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    selectedInterests.add(subject);
+                                  } else {
+                                    selectedInterests.remove(subject);
+                                  }
+                                });
+                              },
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        SizedBox(height: 35),
+                      ],
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryBrown,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          minimumSize: Size(double.infinity, 54),
+                          textStyle: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                          ),
+                        ),
+                        child: Text(
+                          _isLoading
+                              ? (isLogin ? '로그인 중 ...' : '회원가입 처리 중 ...')
+                              : (isLogin ? '로그인' : '회원가입 완료'),
                         ),
                       ),
-                    ),
-                  ),
 
-                ],
+                      SizedBox(height: 10),
+                      Center(
+                        child: OutlinedButton(
+                          onPressed: toggle,
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            side: BorderSide(color: primaryBrown, width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            minimumSize: Size(double.infinity, 54),
+                          ),
+                          child: Text(
+                            isLogin ? '회원가입' : '이미 계정이 있나요? 로그인',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              color: primaryBrown,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        )
           ),
           if (_isLoading)
             Positioned.fill(
               child: Container(
                 color: Colors.white.withOpacity(0.65),
-                 child: Center(
-                    child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 28),
-                            decoration: BoxDecoration(
-                          color: Colors.brown[100]?.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(10),
-
-                        ),
-                       ),
-                      ),
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 28),
+                    decoration: BoxDecoration(
+                      color: Colors.brown[100]?.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                ],
-        ),
-      );
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -699,17 +695,19 @@ class _Label extends StatelessWidget {
         ),
         children: required
             ? [
-          TextSpan(
-            text: " *",
-            style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700),
-          )
-        ]
+                TextSpan(
+                  text: " *",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ]
             : [],
       ),
     );
   }
 }
-
 
 //메인페이지
 class MainPage extends StatefulWidget {
@@ -720,12 +718,15 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-
   List<String> get unknownWords => globalUnknownWords;
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final formattedDate = DateFormat('yyyy년 M월 d일', 'ko_KR',).format(now);
+    final formattedDate = DateFormat('yyyy년 M월 d일', 'ko_KR').format(now);
+    // 디버그용 코드로 사용 가능한 폰트 확인
+    debugPrint(
+      'Available fonts: ${Theme.of(context).textTheme.bodyLarge?.fontFamily}',
+    );
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -741,7 +742,7 @@ class _MainPageState extends State<MainPage> {
                   Text(
                     formattedDate,
                     style: const TextStyle(
-                        fontFamily: 'Jalnan2',
+                      fontFamily: 'Jalnan2',
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -756,9 +757,7 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
 
-
-
-    Expanded(
+            Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 children: [
@@ -817,17 +816,21 @@ class _MainPageState extends State<MainPage> {
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                      MaterialPageRoute(builder: (_) =>
-                                      ScrapActivityPage( )),
+                                    MaterialPageRoute(
+                                      builder: (_) => ScrapActivityPage(),
+                                    ),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Color(0xFFFBC3A5),
                                   elevation: 2,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24)),
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: 36, vertical: 13),
+                                    horizontal: 36,
+                                    vertical: 13,
+                                  ),
                                   minimumSize: Size(140, 36),
                                 ),
                                 child: Text(
@@ -907,14 +910,17 @@ class _MainPageState extends State<MainPage> {
                                 borderRadius: BorderRadius.circular(30),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(30),
-                                    onTap: () async {
-                                      await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => WordbookPage(
-                                              unknownWords: List<String>.from(globalUnknownWords)),
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => WordbookPage(
+                                          unknownWords: List<String>.from(
+                                            globalUnknownWords,
+                                          ),
                                         ),
-                                      );
+                                      ),
+                                    );
                                     setState(() {}); //화면갱신!
                                   },
                                   child: Padding(
@@ -927,7 +933,7 @@ class _MainPageState extends State<MainPage> {
                                   ),
                                 ),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -936,163 +942,184 @@ class _MainPageState extends State<MainPage> {
 
                   const SizedBox(height: 10),
                   // 카드 3
-      Card(
-        color: const Color(0xFFFFFBDD),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25),
-        ),
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-          child: SizedBox(
-            width: double.infinity,
-            height: 120,
-            child: Stack(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: const [
-                    Text(
-                      '스크랩 활동 기록',
-                      style: TextStyle(
-                        fontFamily: 'Jalnan2',
-                        fontSize: 21,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF733E17),
-                      ),
+                  Card(
+                    color: const Color(0xFFFFFBDD),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
                     ),
-                    SizedBox(height: 7),
-                    Text(
-                      '스크랩한 기사와 단어, 작성한 생각 등\n활동 내역을 날짜별로 확인해 보세요.',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.black87,
-                        fontFamily: 'Pretendard',
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Image.asset(
-                    'assets/clipboard_icon.png',
-                    width: 69,
-                    height: 69,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Positioned(
-                  right: 1,
-                  bottom: 0,
-                  child: Material(
-                    color: Color(0xFFFBC3A5),
-                    borderRadius: BorderRadius.circular(30),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(30),
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 120,
+                        child: Stack(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  '스크랩 활동 기록',
+                                  style: TextStyle(
+                                    fontFamily: 'Jalnan2',
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF733E17),
+                                  ),
+                                ),
+                                SizedBox(height: 7),
+                                Text(
+                                  '스크랩한 기사와 단어, 작성한 생각 등\n활동 내역을 날짜별로 확인해 보세요.',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black87,
+                                    fontFamily: 'Pretendard',
+                                    height: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: Image.asset(
+                                'assets/clipboard_icon.png',
+                                width: 69,
+                                height: 69,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            Positioned(
+                              right: 1,
+                              bottom: 0,
+                              child: Material(
+                                color: Color(0xFFFBC3A5),
+                                borderRadius: BorderRadius.circular(30),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(30),
 
-                      onTap: () async {
-                        final prefs = await SharedPreferences.getInstance();
-                        final token = prefs.getString('access_token') ?? '';
-                        final activity = todaysActivities.first;
+                                  onTap: () async {
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final token =
+                                        prefs.getString('access_token') ?? '';
+                                    final activity = todaysActivities.first;
 
-                        final feedbackData = await fetchFeedbackDetail(accessToken: token, articleId: activity.articleId);
+                                    final feedbackData =
+                                        await fetchFeedbackDetail(
+                                          accessToken: token,
+                                          articleId: activity.articleId,
+                                        );
 
+                                    List<FeedbackSectionData> feedbackSections =
+                                        [];
+                                    if (feedbackData != null &&
+                                        feedbackData['feedbacks'] != null) {
+                                      for (final fb
+                                          in feedbackData['feedbacks']) {
+                                        print(
+                                          'Received activityType: ${fb['activityType']}',
+                                        );
+                                        final type = (fb['activityType'] ?? '')
+                                            .toString()
+                                            .toUpperCase();
+                                        String? titleStr;
+                                        switch (type) {
+                                          case 'CATEGORY':
+                                            titleStr = "기사 분야 파악하기";
+                                            break;
+                                          case 'TITLE':
+                                            titleStr = "기사 제목 파악하기";
+                                            break;
+                                          case 'KEYWORD':
+                                            titleStr = "주요 키워드 찾기";
+                                            break;
+                                          case 'SUMMARY':
+                                            titleStr = "요약하기";
+                                            break;
+                                          case 'THOUGHT_SUMMARY':
+                                            titleStr = "자신의 생각 키우기";
+                                            break;
+                                          default:
+                                            titleStr = null;
+                                        }
+                                        if (titleStr != null) {
+                                          feedbackSections.add(
+                                            FeedbackSectionData(
+                                              title: titleStr,
+                                              myAnswer: fb['userAnswer'] ?? "",
+                                              modelAnswer: fb['aiAnswer'] ?? "",
+                                              feedback: fb['aiFeedback'] ?? "",
+                                              score:
+                                                  fb['evaluationScore'] != null
+                                                  ? double.tryParse(
+                                                      fb['evaluationScore']
+                                                          .toString(),
+                                                    )
+                                                  : null,
+                                              similarityScore:
+                                                  fb['similarityScore'] != null
+                                                  ? double.tryParse(
+                                                      fb['similarityScore']
+                                                          .toString(),
+                                                    )
+                                                  : null,
+                                              evaluationScore:
+                                                  fb['evaluationScore']
+                                                      ?.toString(),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
 
-                        List<FeedbackSectionData> feedbackSections = [];
-                        if (feedbackData != null && feedbackData['feedbacks'] != null) {
-                          for (final fb in feedbackData['feedbacks']) {
-                            print(
-                                'Received activityType: ${fb['activityType']}');
-                            final type = (fb['activityType'] ?? '')
-                                .toString()
-                                .toUpperCase();
-                            String? titleStr;
-                            switch (type) {
-                              case 'CATEGORY':
-                                titleStr = "기사 분야 파악하기";
-                                break;
-                              case 'TITLE':
-                                titleStr = "기사 제목 파악하기";
-                                break;
-                              case 'KEYWORD':
-                                titleStr = "주요 키워드 찾기";
-                                break;
-                              case 'SUMMARY':
-                                titleStr = "요약하기";
-                                break;
-                              case 'THOUGHT_SUMMARY':
-                                titleStr = "자신의 생각 키우기";
-                                break;
-                              default:
-                                titleStr = null;
-                            }
-                            if (titleStr != null) {
-                              feedbackSections.add(
-                                FeedbackSectionData(
-                                  title: titleStr,
-                                  myAnswer: fb['userAnswer'] ?? "",
-                                  modelAnswer: fb['aiAnswer'] ?? "",
-                                  feedback: fb['aiFeedback'] ?? "",
-                                  score: fb['evaluationScore'] != null ? double.tryParse(fb['evaluationScore'].toString()) : null,
-                                  similarityScore: fb['similarityScore'] != null ? double.tryParse(fb['similarityScore'].toString()) : null,
-                                  evaluationScore: fb['evaluationScore']?.toString(),
-                                )
-                              );
-                              }
-                            }
-                          }
-
-
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ScrapHistoryDetailPage(
-                              activity: activity,
-                              feedbackSections: feedbackSections,
-                              unknownWords: activity.unknownWords,
-                              keywords: activity.keywords,
-                              userSummary: activity.summary,
-                              userOpinion: activity.opinion,
-                              modelSummary: '',
-                              feedbackSummary: '',
-                              modelOpinion: '',
-                              feedbackOpinion: '',
-                          ),
-                          ),
-                        );
-                        },
-                      child: const Padding(
-                        padding: EdgeInsets.all(9),
-                        child: Icon(
-                          Icons.arrow_forward,
-                          color: Color(0xFF733E17),
-                          size: 25,
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ScrapHistoryDetailPage(
+                                          activity: activity,
+                                          feedbackSections: feedbackSections,
+                                          unknownWords: activity.unknownWords,
+                                          keywords: activity.keywords,
+                                          userSummary: activity.summary,
+                                          userOpinion: activity.opinion,
+                                          modelSummary: '',
+                                          feedbackSummary: '',
+                                          modelOpinion: '',
+                                          feedbackOpinion: '',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(9),
+                                    child: Icon(
+                                      Icons.arrow_forward,
+                                      color: Color(0xFF733E17),
+                                      size: 25,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
-    ]
-              ),
-            )
-          ]
-        )
-      ),
     );
-  }}
-
+  }
+}
 
 //스크랩 api
-Future<Map<String, dynamic>?> fetchArticle(String userToken,) async {
+Future<Map<String, dynamic>?> fetchArticle(String userToken) async {
   final url = Uri.parse('http://43.202.149.234:8080/api/scrap-news/pick-one');
   final response = await http.post(
     url,
@@ -1106,7 +1133,6 @@ Future<Map<String, dynamic>?> fetchArticle(String userToken,) async {
   }
   return null;
 }
-
 
 //스크랩
 class ScrapActivityPage extends StatefulWidget {
@@ -1144,7 +1170,6 @@ class _ScrapActivityPageState extends State<ScrapActivityPage> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1170,7 +1195,11 @@ class _ScrapActivityPageState extends State<ScrapActivityPage> {
                 minimumSize: Size(0, 36),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              icon: Icon(Icons.home_outlined, color: Color(0xFF733E17), size: 22),
+              icon: Icon(
+                Icons.home_outlined,
+                color: Color(0xFF733E17),
+                size: 22,
+              ),
               label: Text(
                 '나가기',
                 style: TextStyle(
@@ -1240,38 +1269,45 @@ class _ScrapActivityPageState extends State<ScrapActivityPage> {
                 child: isLoading
                     ? Center(child: CircularProgressIndicator())
                     : (article == null
-                    ? Center(child: Text("기사를 불러올 수 없습니다."))
-                    : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (article?['content'] != null)
-                        Text(article!['content'],
-                            style: TextStyle(fontSize: 15, height: 1.5)),
-                    ],
-                  ),
-                )
-                ),
+                          ? Center(child: Text("기사를 불러올 수 없습니다."))
+                          : SingleChildScrollView(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (article?['content'] != null)
+                                    Text(
+                                      article!['content'],
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            )),
               ),
             ),
 
-      Padding(
-        padding: EdgeInsets.only(bottom: 90, top: 0),
-            child: FractionallySizedBox(
-              widthFactor: 0.8,
-              child: ElevatedButton(
-                onPressed: article == null ? null : () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => CrollingPage(
-                            newsText: article!['content'] ?? '',
-                            articleId: article?['articleId'] ?? 0,
-                            articleTitle: article?['title'] ?? '',
-                          )),
-                    );
-                  },
+            Padding(
+              padding: EdgeInsets.only(bottom: 90, top: 0),
+              child: FractionallySizedBox(
+                widthFactor: 0.8,
+                child: ElevatedButton(
+                  onPressed: article == null
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CrollingPage(
+                                newsText: article!['content'] ?? '',
+                                articleId: article?['articleId'] ?? 0,
+                                articleTitle: article?['title'] ?? '',
+                              ),
+                            ),
+                          );
+                        },
 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF733E17),
@@ -1289,14 +1325,13 @@ class _ScrapActivityPageState extends State<ScrapActivityPage> {
                   child: const Text("스크랩 활동하기"),
                 ),
               ),
-             )
+            ),
           ],
         ),
       ),
     );
   }
 }
-
 
 //기사 크롤링
 
@@ -1332,12 +1367,16 @@ class _CrollingPageState extends State<CrollingPage> {
   void onScrapComplete(BuildContext context) {
     final newActivity = ScrapActivity(
       category: fieldController.text,
-      order: allActivities
-        .where((a) =>
-    a.activityDateTime.year == DateTime.now().year &&
-        a.activityDateTime.month == DateTime.now().month &&
-        a.activityDateTime.day == DateTime.now().day)
-        .length + 1,
+      order:
+          allActivities
+              .where(
+                (a) =>
+                    a.activityDateTime.year == DateTime.now().year &&
+                    a.activityDateTime.month == DateTime.now().month &&
+                    a.activityDateTime.day == DateTime.now().day,
+              )
+              .length +
+          1,
       activityDateTime: DateTime.now(),
       title: titleController.text,
       content: widget.newsText,
@@ -1348,9 +1387,7 @@ class _CrollingPageState extends State<CrollingPage> {
       articleId: widget.articleId,
     );
     allActivities.add(newActivity);
-
   }
-
 
   @override
   void initState() {
@@ -1413,7 +1450,10 @@ class _CrollingPageState extends State<CrollingPage> {
                 ),
                 elevation: 4,
                 shadowColor: Colors.grey.withOpacity(1),
-                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 0,
+                ),
                 minimumSize: const Size(0, 36),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -1424,7 +1464,6 @@ class _CrollingPageState extends State<CrollingPage> {
                   color: Color(0xFF733E17),
                   fontWeight: FontWeight.w900,
                   fontSize: 16.2,
-
                 ),
               ),
               onPressed: () => Navigator.pop(context),
@@ -1439,8 +1478,10 @@ class _CrollingPageState extends State<CrollingPage> {
             children: [
               Container(
                 margin: const EdgeInsets.only(bottom: 13, top: 3),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 7,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -1477,14 +1518,14 @@ class _CrollingPageState extends State<CrollingPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 0, vertical: 2),
+                        horizontal: 0,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                          border: Border(
-                            top: BorderSide(
-                              width: 2,
-                              color: Color(0xFF3A0B0B),
-                            ),
-                          )),
+                        border: Border(
+                          top: BorderSide(width: 2, color: Color(0xFF3A0B0B)),
+                        ),
+                      ),
                       child: Text(
                         "스크랩 활동",
                         style: TextStyle(
@@ -1495,7 +1536,7 @@ class _CrollingPageState extends State<CrollingPage> {
                           letterSpacing: 0.8,
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -1504,7 +1545,10 @@ class _CrollingPageState extends State<CrollingPage> {
                 label: "분야 (예: 경제, 환경)",
                 controller: fieldController,
                 brown: Color(0xFF3A0B0B),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 13,
+                ),
                 margin: const EdgeInsets.only(bottom: 13),
                 labelBold: true,
               ),
@@ -1512,7 +1556,10 @@ class _CrollingPageState extends State<CrollingPage> {
                 label: "제목 (기사 내용에 어울리는 제목을 작성하세요.)",
                 controller: titleController,
                 brown: Color(0xFF3A0B0B),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 13,
+                ),
                 margin: const EdgeInsets.only(bottom: 13),
                 labelBold: true,
               ),
@@ -1540,7 +1587,10 @@ class _CrollingPageState extends State<CrollingPage> {
                 brown: Color(0xFF3A0B0B),
                 minLines: 5,
                 maxLines: 5,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 margin: const EdgeInsets.only(bottom: 13),
                 labelBold: true,
               ),
@@ -1565,7 +1615,10 @@ class _CrollingPageState extends State<CrollingPage> {
                       decoration: BoxDecoration(
                         color: Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300, width: 1.4),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1.4,
+                        ),
                       ),
                       child: TextField(
                         minLines: 7,
@@ -1573,8 +1626,10 @@ class _CrollingPageState extends State<CrollingPage> {
                         controller: opinionController,
                         textAlignVertical: TextAlignVertical.top,
                         decoration: const InputDecoration(
-                          contentPadding:
-                          EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           border: InputBorder.none,
                         ),
                         style: const TextStyle(fontSize: 15),
@@ -1583,7 +1638,6 @@ class _CrollingPageState extends State<CrollingPage> {
                   ],
                 ),
               ),
-
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
@@ -1598,12 +1652,19 @@ class _CrollingPageState extends State<CrollingPage> {
                       final opinionText = opinionController.text.trim();
                       final newActivity = ScrapActivity(
                         category: fieldText,
-                        order: allActivities
-                            .where((a) =>
-                        a.activityDateTime.year == DateTime.now().year &&
-                            a.activityDateTime.month == DateTime.now().month &&
-                            a.activityDateTime.day == DateTime.now().day)
-                            .length + 1,
+                        order:
+                            allActivities
+                                .where(
+                                  (a) =>
+                                      a.activityDateTime.year ==
+                                          DateTime.now().year &&
+                                      a.activityDateTime.month ==
+                                          DateTime.now().month &&
+                                      a.activityDateTime.day ==
+                                          DateTime.now().day,
+                                )
+                                .length +
+                            1,
                         activityDateTime: DateTime.now(),
                         title: titleText,
                         content: widget.newsText,
@@ -1615,42 +1676,43 @@ class _CrollingPageState extends State<CrollingPage> {
                       );
                       allActivities.add(newActivity);
 
-                        if (fieldController.text.trim().isEmpty) {
-                          showAlertDialog(context, '분야를 입력하지\n 않았습니다.');
-                          return;
-                        }
-                        if (titleController.text.trim().isEmpty) {
-                          showAlertDialog(context, '제목을 입력하지\n 않았습니다.');
-                          return;
-                        }
-                        if (keywords.isEmpty) {
-                          showAlertDialog(context, '주요 키워드를 입력하지\n 않았습니다.');
-                          return;
-                        }
-                        if (summaryController.text.trim().isEmpty) {
-                          showAlertDialog(context, '기사 요약을 입력하지\n 않았습니다.');
-                          return;
-                        }
-                        if (opinionController.text.trim().isEmpty) {
-                          showAlertDialog(context, '기사에 대한 자신의 생각을\n 입력하지 않았습니다.');
-                          return;
-                        }
-
-
-                        showSuccessDialog(
+                      if (fieldController.text.trim().isEmpty) {
+                        showAlertDialog(context, '분야를 입력하지\n 않았습니다.');
+                        return;
+                      }
+                      if (titleController.text.trim().isEmpty) {
+                        showAlertDialog(context, '제목을 입력하지\n 않았습니다.');
+                        return;
+                      }
+                      if (keywords.isEmpty) {
+                        showAlertDialog(context, '주요 키워드를 입력하지\n 않았습니다.');
+                        return;
+                      }
+                      if (summaryController.text.trim().isEmpty) {
+                        showAlertDialog(context, '기사 요약을 입력하지\n 않았습니다.');
+                        return;
+                      }
+                      if (opinionController.text.trim().isEmpty) {
+                        showAlertDialog(
                           context,
-                          newsText: widget.newsText,
-                          summary: summaryText,
-                          field: fieldText,
-                          title: titleText,
-                          keywords: keywords,
-                          unknownWords: words,
-                          myKeywords: myKeywords,
-                          modelKeywords: modelKeywords,
-                          opinion: opinionText,
-                          articleId: widget.articleId,
-
+                          '기사에 대한 자신의 생각을\n 입력하지 않았습니다.',
                         );
+                        return;
+                      }
+
+                      showSuccessDialog(
+                        context,
+                        newsText: widget.newsText,
+                        summary: summaryText,
+                        field: fieldText,
+                        title: titleText,
+                        keywords: keywords,
+                        unknownWords: words,
+                        myKeywords: myKeywords,
+                        modelKeywords: modelKeywords,
+                        opinion: opinionText,
+                        articleId: widget.articleId,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryBrown,
@@ -1685,8 +1747,10 @@ class _CrollingPageState extends State<CrollingPage> {
     bool labelBold = false,
     int minLines = 1,
     int maxLines = 1,
-    EdgeInsetsGeometry contentPadding =
-    const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+    EdgeInsetsGeometry contentPadding = const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 13,
+    ),
     EdgeInsetsGeometry? margin,
   }) {
     return Padding(
@@ -1716,6 +1780,7 @@ class _CrollingPageState extends State<CrollingPage> {
       ),
     );
   }
+
   Widget customLabel(String label, Color color) {
     final match = RegExp(r'^(.+?)(\s*\(.+\))$').firstMatch(label);
     if (match != null) {
@@ -1785,8 +1850,10 @@ class _CrollingPageState extends State<CrollingPage> {
               controller: controller,
               onSubmitted: onAdd,
               decoration: const InputDecoration(
-                contentPadding:
-                EdgeInsets.symmetric(horizontal: 14, vertical: 20),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 20,
+                ),
                 border: InputBorder.none,
               ),
               style: const TextStyle(fontSize: 15),
@@ -1814,16 +1881,21 @@ class _CrollingPageState extends State<CrollingPage> {
                     children: [
                       GestureDetector(
                         onTap: () => onDelete(idx),
-                        child: Icon(Icons.cancel_rounded, color: primaryBrown, size: 10),
+                        child: Icon(
+                          Icons.cancel_rounded,
+                          color: primaryBrown,
+                          size: 10,
+                        ),
                       ),
                       const SizedBox(width: 2),
                       Flexible(
                         child: Text(
                           tags[idx],
                           style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF3A0B0B),
-                              fontWeight: FontWeight.w800),
+                            fontSize: 13,
+                            color: Color(0xFF3A0B0B),
+                            fontWeight: FontWeight.w800,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1881,6 +1953,7 @@ void showAlertDialog(BuildContext context, String message) {
     ),
   );
 }
+
 String userTypeStringToCode(String eval) {
   final parts = eval.split(';');
   if (parts.length != 4) return eval;
@@ -1889,30 +1962,36 @@ String userTypeStringToCode(String eval) {
     int? num = int.tryParse(parts[i].trim());
     if (num == null) return eval;
     switch (i) {
-      case 0: code += (num >= 5) ? 'O' : 'S'; break;
-      case 1: code += (num >= 5) ? 'A' : 'I'; break;
-      case 2: code += (num >= 5) ? 'C' : 'P'; break;
-      case 3: code += (num >= 5) ? 'T' : 'N'; break;
+      case 0:
+        code += (num >= 5) ? 'O' : 'S';
+        break;
+      case 1:
+        code += (num >= 5) ? 'A' : 'I';
+        break;
+      case 2:
+        code += (num >= 5) ? 'C' : 'P';
+        break;
+      case 3:
+        code += (num >= 5) ? 'T' : 'N';
+        break;
     }
   }
   return code;
 }
 
-
-
-
-void showSuccessDialog(BuildContext context,
-    {required String summary,
-      required String newsText,
-      required String field,
-      required String title,
-      required List<String> keywords,
-      required List<String> unknownWords,
-      required List<String> myKeywords,
-      required List<String> modelKeywords,
-      required String opinion,
-      required int articleId,
-    }) {
+void showSuccessDialog(
+  BuildContext context, {
+  required String summary,
+  required String newsText,
+  required String field,
+  required String title,
+  required List<String> keywords,
+  required List<String> unknownWords,
+  required List<String> myKeywords,
+  required List<String> modelKeywords,
+  required String opinion,
+  required int articleId,
+}) {
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -1959,7 +2038,7 @@ void showSuccessDialog(BuildContext context,
                 ),
                 minimumSize: Size(0, 37),
               ),
-              onPressed:  () async {
+              onPressed: () async {
                 final prefs = await SharedPreferences.getInstance();
                 final token = prefs.getString('access_token') ?? '';
 
@@ -1980,35 +2059,53 @@ void showSuccessDialog(BuildContext context,
                 if (feedback != null && feedback['feedbacks'] != null) {
                   for (final fb in feedback['feedbacks']) {
                     print('Received activityType: ${fb['activityType']}');
-                    final type = (fb['activityType'] ?? '').toString().toUpperCase();
+                    final type = (fb['activityType'] ?? '')
+                        .toString()
+                        .toUpperCase();
                     String? titleStr;
                     switch (type) {
-                      case 'CATEGORY': titleStr = "기사 분야 파악하기"; break;
-                      case 'TITLE':   titleStr = "기사 제목 파악하기"; break;
-                      case 'KEYWORD': titleStr = "주요 키워드 찾기"; break;
-                      case 'SUMMARY': titleStr = "요약하기"; break;
-                      case 'THOUGHT_SUMMARY': titleStr = "자신의 생각 키우기"; break;
-                      default:        titleStr =  null;
+                      case 'CATEGORY':
+                        titleStr = "기사 분야 파악하기";
+                        break;
+                      case 'TITLE':
+                        titleStr = "기사 제목 파악하기";
+                        break;
+                      case 'KEYWORD':
+                        titleStr = "주요 키워드 찾기";
+                        break;
+                      case 'SUMMARY':
+                        titleStr = "요약하기";
+                        break;
+                      case 'THOUGHT_SUMMARY':
+                        titleStr = "자신의 생각 키우기";
+                        break;
+                      default:
+                        titleStr = null;
                     }
                     if (titleStr != null) {
-                    feedbackSections.add(
-                      FeedbackSectionData(
-                        title: titleStr,
-                        myAnswer: fb['userAnswer'] ?? "",
-                        modelAnswer: fb['aiAnswer'] ?? "",
-                        feedback: fb['aiFeedback'] ?? "",
-                        score: fb['evaluationScore'] != null ? double.tryParse(fb['evaluationScore'].toString()) : null,
-                        similarityScore: fb['similarityScore'] != null ? double.tryParse(fb['similarityScore'].toString()) : null,
-                        evaluationScore: fb['evaluationScore']?.toString(),
-                      ),
-                    );
-                  }
+                      feedbackSections.add(
+                        FeedbackSectionData(
+                          title: titleStr,
+                          myAnswer: fb['userAnswer'] ?? "",
+                          modelAnswer: fb['aiAnswer'] ?? "",
+                          feedback: fb['aiFeedback'] ?? "",
+                          score: fb['evaluationScore'] != null
+                              ? double.tryParse(
+                                  fb['evaluationScore'].toString(),
+                                )
+                              : null,
+                          similarityScore: fb['similarityScore'] != null
+                              ? double.tryParse(
+                                  fb['similarityScore'].toString(),
+                                )
+                              : null,
+                          evaluationScore: fb['evaluationScore']?.toString(),
+                        ),
+                      );
+                    }
                     print('Added section with title: $titleStr');
-
                   }
-
-                  }
-
+                }
 
                 Navigator.push(
                   context,
@@ -2019,31 +2116,30 @@ void showSuccessDialog(BuildContext context,
                       unknownWords: unknownWords,
                       userSummary: summary,
                       userOpinion: opinion,
-
                     ),
                   ),
                 );
               },
-              child: Text('AI 피드백 받기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              child: Text(
+                'AI 피드백 받기',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
             ),
           ),
         ],
       ),
     ),
   );
-
-
 }
 
 // 스크랩 활동 피드백
 
 class AiFeedbackPage extends StatelessWidget {
-  final String newsText;      // 뉴스 지문
+  final String newsText; // 뉴스 지문
   final List<String> unknownWords;
   final List<FeedbackSectionData> feedbackSections;
   final String userSummary;
   final String userOpinion;
-
 
   final String? modelSummary;
   final String? feedbackSummary;
@@ -2072,56 +2168,52 @@ class AiFeedbackPage extends StatelessWidget {
         break;
       }
     }
-      List<Widget> feedbackWidgets = [];
+    List<Widget> feedbackWidgets = [];
 
+    for (final section in feedbackSections) {
+      String? extraBadge;
 
-
-
-
-      for (final section in feedbackSections) {
-        String? extraBadge;
-
-        switch (section.title) {
-          case "기사 분야 파악하기":
-          case "기사 제목 파악하기":
-          case "주요 키워드 찾기":
+      switch (section.title) {
+        case "기사 분야 파악하기":
+        case "기사 제목 파악하기":
+        case "주요 키워드 찾기":
           if (section.similarityScore != null) {
-            extraBadge = '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
+            extraBadge =
+                '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
           } else if (section.score != null) {
-            extraBadge = '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
+            extraBadge =
+                '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
           }
           break;
-          case "요약하기":
-            if (section.score != null)
-              extraBadge = '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
-            break;
-          case "자신의 생각 키우기":
-            if (section.evaluationScore != null && section.evaluationScore!.contains(';')) {
-              extraBadge = '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
-            } else if (section.evaluationScore != null) {
-              extraBadge = '사용자 유형: ${section.evaluationScore!}';
-            }
-            break;
-        }
-        feedbackWidgets.add(
-          FeedbackSectionCard(
-            title: section.title,
-            myAnswer: section.myAnswer,
-            modelAnswer: section.modelAnswer,
-            feedback: section.feedback,
-            similarityScore: section.similarityScore,
-            extraBadge: extraBadge,
-          ),
-        );
-
-        if (section.title == "주요 키워드 찾기") {
-          feedbackWidgets.add(
-            UnknownWordsCard(words: unknownWords),
-          );
-        }
+        case "요약하기":
+          if (section.score != null)
+            extraBadge = '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
+          break;
+        case "자신의 생각 키우기":
+          if (section.evaluationScore != null &&
+              section.evaluationScore!.contains(';')) {
+            extraBadge =
+                '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
+          } else if (section.evaluationScore != null) {
+            extraBadge = '사용자 유형: ${section.evaluationScore!}';
+          }
+          break;
       }
+      feedbackWidgets.add(
+        FeedbackSectionCard(
+          title: section.title,
+          myAnswer: section.myAnswer,
+          modelAnswer: section.modelAnswer,
+          feedback: section.feedback,
+          similarityScore: section.similarityScore,
+          extraBadge: extraBadge,
+        ),
+      );
 
-
+      if (section.title == "주요 키워드 찾기") {
+        feedbackWidgets.add(UnknownWordsCard(words: unknownWords));
+      }
+    }
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -2129,7 +2221,10 @@ class AiFeedbackPage extends StatelessWidget {
         elevation: 0,
         backgroundColor: Color(0xFF733E17),
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('스크랩 활동 피드백', style: TextStyle(color: Colors.white, fontFamily: 'Jalnan2',)),
+        title: const Text(
+          '스크랩 활동 피드백',
+          style: TextStyle(color: Colors.white, fontFamily: 'Jalnan2'),
+        ),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -2175,20 +2270,14 @@ class AiFeedbackPage extends StatelessWidget {
                   ),
                   ...feedbackWidgets,
                 ],
-      ),
-    ),
-
-
-
-
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-
 
 //피드백페이지 뉴스지문
 Widget feedbackNewsSection(String newsText) {
@@ -2225,28 +2314,29 @@ Widget feedbackNewsSection(String newsText) {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: Color(0xFFE0DAD3), width: 1),
         ),
-  child: Stack(
-  children: [
-  Padding(
-  padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-  child: SingleChildScrollView(
-  controller: _newsScrollController,
-  child: Text(
-  newsText,
-  style: TextStyle(
-  fontSize: 15,
-  height: 1.3,
-  color: Colors.black87,
-  fontFamily: 'Pretendard',
-          ),
-          ),
-          ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+              child: SingleChildScrollView(
+                controller: _newsScrollController,
+                child: Text(
+                  newsText,
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.3,
+                    color: Colors.black87,
+                    fontFamily: 'Pretendard',
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      ]),
-      )],
+      ),
+    ],
   );
 }
-
 
 class _KeywordChip extends StatelessWidget {
   final String text;
@@ -2263,14 +2353,14 @@ class _KeywordChip extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-            fontSize: 15,
-            color: Color(0xFF733E17),
-            fontWeight: FontWeight.w700),
+          fontSize: 15,
+          color: Color(0xFF733E17),
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
 }
-
 
 class UnknownWordsCard extends StatelessWidget {
   final List<String> words;
@@ -2291,7 +2381,8 @@ class UnknownWordsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('모르는 어휘 목록',
+            Text(
+              '모르는 어휘 목록',
               style: TextStyle(
                 fontFamily: 'Jalnan2',
                 fontWeight: FontWeight.w500,
@@ -2303,10 +2394,10 @@ class UnknownWordsCard extends StatelessWidget {
             words.isEmpty
                 ? Text('없음', style: TextStyle(color: Colors.grey))
                 : Wrap(
-              spacing: 8,
-              runSpacing: 7,
-              children: words.map((w) => _KeywordChip(text: w)).toList(),
-            ),
+                    spacing: 8,
+                    runSpacing: 7,
+                    children: words.map((w) => _KeywordChip(text: w)).toList(),
+                  ),
             SizedBox(height: 22),
             SizedBox(
               width: double.infinity,
@@ -2326,10 +2417,13 @@ class UnknownWordsCard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF733E17),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: Text("단어장에서 확인하기",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                child: Text(
+                  "단어장에서 확인하기",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                ),
               ),
             ),
           ],
@@ -2338,7 +2432,6 @@ class UnknownWordsCard extends StatelessWidget {
     );
   }
 }
-
 
 class _FeedbackSectionCardCustom extends StatelessWidget {
   final String title;
@@ -2374,31 +2467,33 @@ class _FeedbackSectionCardCustom extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-            Text(title,
-                style: TextStyle(
-                  fontFamily: 'Jalnan2',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 18,
-                  color: primaryBrown,
-                )),
-            if (extraBadge != null)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Color(0xFFFFE093),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text(
-                  extraBadge!,
+                Text(
+                  title,
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11,
-                    color: Color(0xFF856320),
+                    fontFamily: 'Jalnan2',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    color: primaryBrown,
                   ),
                 ),
-              ),
-          ],
-        ),
+                if (extraBadge != null)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFFFE093),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      extraBadge!,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        color: Color(0xFF856320),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             SizedBox(height: 15),
             _LabelAnswerBlock(
               label: '내 답변',
@@ -2408,16 +2503,16 @@ class _FeedbackSectionCardCustom extends StatelessWidget {
               labelTextColor: Color(0xFF715729),
               valueTextColor: Colors.black,
             ),
-          if (modelText.isNotEmpty) ...[
-            SizedBox(height: 13),
-            _LabelAnswerBlock(
-              label: '모범 답변',
-              value: modelText,
-              labelBg: Color(0xFFCBF8C9),
-              valueBg: Color(0xFFD9FFE3),
-              labelTextColor: Color(0xFF30824A),
-              valueTextColor: Colors.black,
-            ),
+            if (modelText.isNotEmpty) ...[
+              SizedBox(height: 13),
+              _LabelAnswerBlock(
+                label: '모범 답변',
+                value: modelText,
+                labelBg: Color(0xFFCBF8C9),
+                valueBg: Color(0xFFD9FFE3),
+                labelTextColor: Color(0xFF30824A),
+                valueTextColor: Colors.black,
+              ),
             ],
             SizedBox(height: 13),
             _LabelAnswerBlock(
@@ -2435,9 +2530,6 @@ class _FeedbackSectionCardCustom extends StatelessWidget {
   }
 }
 
-
-
-
 class FeedbackSectionData {
   final String title;
   final String myAnswer;
@@ -2447,7 +2539,6 @@ class FeedbackSectionData {
   final double? similarityScore;
   final String? evaluationScore;
   final String? userType;
-
 
   FeedbackSectionData({
     required this.title,
@@ -2460,7 +2551,6 @@ class FeedbackSectionData {
     this.evaluationScore,
   });
 }
-
 
 class FeedbackSectionCard extends StatelessWidget {
   final String title;
@@ -2479,7 +2569,6 @@ class FeedbackSectionCard extends StatelessWidget {
     this.similarityScore,
     this.extraBadge,
   });
-
 
   @override
   Widget build(BuildContext context) {
@@ -2537,15 +2626,15 @@ class FeedbackSectionCard extends StatelessWidget {
             valueTextColor: Colors.black,
           ),
           SizedBox(height: 13),
-        if (modelAnswer.isNotEmpty) ...[
-          _LabelAnswerBlock(
-            label: '모범 답변',
-            value: modelAnswer,
-            labelBg: Color(0xFFCBF8C9),
-            valueBg: Color(0xFFD9FFE3),
-            labelTextColor: Color(0xFF30824A),
-            valueTextColor: Colors.black,
-          ),
+          if (modelAnswer.isNotEmpty) ...[
+            _LabelAnswerBlock(
+              label: '모범 답변',
+              value: modelAnswer,
+              labelBg: Color(0xFFCBF8C9),
+              valueBg: Color(0xFFD9FFE3),
+              labelTextColor: Color(0xFF30824A),
+              valueTextColor: Colors.black,
+            ),
           ],
           SizedBox(height: 13),
           _LabelAnswerBlock(
@@ -2616,17 +2705,13 @@ class _LabelAnswerBlock extends StatelessWidget {
           ),
           child: Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              color: valueTextColor,
-            ),
+            style: TextStyle(fontSize: 16, color: valueTextColor),
           ),
         ),
       ],
     );
   }
 }
-
 
 // 네 아니요 팝업
 void showGoMainMenuDialog(BuildContext context) {
@@ -2664,7 +2749,7 @@ void showGoMainMenuDialog(BuildContext context) {
                       Navigator.of(context).pop(); // 닫기
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(builder: (_) => MainPage()),
-                            (route) => false,
+                        (route) => false,
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -2716,6 +2801,7 @@ void showGoMainMenuDialog(BuildContext context) {
     ),
   );
 }
+
 //피드백 api
 Future<Map<String, dynamic>?> requestFeedback({
   required String accessToken,
@@ -2753,7 +2839,6 @@ Future<Map<String, dynamic>?> requestFeedback({
   }
 }
 
-
 Future<Map<String, dynamic>?> fetchFeedbackDetail({
   required String accessToken,
   required int articleId,
@@ -2778,7 +2863,9 @@ Future<Map<String, dynamic>?> fetchMonthlyActivity({
   required int year,
   required int month,
 }) async {
-  final url = Uri.parse('http://43.202.149.234:8080/api/feedback/list?year=$year&month=$month');
+  final url = Uri.parse(
+    'http://43.202.149.234:8080/api/feedback/list?year=$year&month=$month',
+  );
   final response = await http.get(
     url,
     headers: {
@@ -2792,12 +2879,6 @@ Future<Map<String, dynamic>?> fetchMonthlyActivity({
     return null;
   }
 }
-
-
-
-
-
-
 
 class VocabWord {
   final int? wordId;
@@ -2893,12 +2974,9 @@ class _DottedLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-
-
 class WordbookPage extends StatefulWidget {
   final List<String> unknownWords;
   final bool fromFeedback;
-
 
   const WordbookPage({
     Key? key,
@@ -2916,7 +2994,7 @@ class _WordbookPageState extends State<WordbookPage> {
 
   List<VocabWord> globalWordbook = [];
 
-//중복방지
+  //중복방지
   void addUnknownWordsToWordbook(List<String> newWords) {
     for (var word in newWords) {
       if (!globalWordbook.any((w) => w.word == word)) {
@@ -2941,6 +3019,7 @@ class _WordbookPageState extends State<WordbookPage> {
     }
     wordList = localWords.map((w) => VocabWord(word: w)).toList();
   }
+
   Future<void> loadWordbook() async {
     List<WordItemDto> items = await fetchWordbook();
     setState(() {
@@ -2970,18 +3049,14 @@ class _WordbookPageState extends State<WordbookPage> {
     }
   }
 
-
   Future<void> fetchMeanings() async {
-
     for (int i = 0; i < wordList.length; i++) {
       setState(() {
         wordList[i].isLoading = true;
         wordList[i].isError = false;
       });
 
-      try {
-
-      } catch (e) {
+      try {} catch (e) {
         wordList[i].meaning = null;
         wordList[i].isError = true;
       }
@@ -3029,11 +3104,16 @@ class _WordbookPageState extends State<WordbookPage> {
           iconTheme: IconThemeData(color: Colors.white),
           elevation: 0,
           centerTitle: true,
-          title: Text('단어장', style: TextStyle(color: Colors.white,
+          title: Text(
+            '단어장',
+            style: TextStyle(
+              color: Colors.white,
               fontFamily: 'Jalnan2',
-              fontWeight: FontWeight.bold)),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           leading: IconButton(
-            icon: Icon(Icons.chevron_left,size: 43),
+            icon: Icon(Icons.chevron_left, size: 43),
             onPressed: () {
               if (widget.fromFeedback) {
                 Navigator.of(context).pop();
@@ -3044,179 +3124,227 @@ class _WordbookPageState extends State<WordbookPage> {
           ),
         ),
         body: wordList.isEmpty
-            ? Center(child: Text('아직 저장된 단어가 없습니다.',
-            style: TextStyle(fontSize: 17, color: Colors.brown)))
+            ? Center(
+                child: Text(
+                  '아직 저장된 단어가 없습니다.',
+                  style: TextStyle(fontSize: 17, color: Colors.brown),
+                ),
+              )
             : ListView.builder(
-          padding: EdgeInsets.only(top: 13, bottom: 20),
-          itemCount: wordList.length,
-          itemBuilder: (context, idx) {
-            final w = wordList[idx];
-            return Container(
-              margin: EdgeInsets.symmetric(horizontal: 19, vertical: 4),
-              padding: EdgeInsets.symmetric(vertical: 8,),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(13),
-                border: Border.all(color: borderColor, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.brown!.withOpacity(0.2),
-                    blurRadius: 3,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  ListTile(
-                    title:
-              Padding(
-                  padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: Text(
-                      w.word,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w400, fontSize: 17),
-                    ),
-            ),
-
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
-                          constraints: BoxConstraints(
-                              minWidth: 24, minHeight: 24),
-                          icon: Icon(
-                              Icons.delete_outline, color: Color(0xFF2F2F2F),
-                              size: 25),
-                        onPressed: () async {
-                          showDeleteWordDialog(context, () async {
-
-                            final prefs = await SharedPreferences.getInstance();
-                            final token = prefs.getString('access_token') ?? '';
-                            final int? wordId = wordList[idx].wordId;
-                            if (wordId == null) {
-                              setState(() {
-                                wordList.removeAt(idx);
-                              });
-                              return;
-                            }
-                            final success = await deleteWordFromWordbook(
-                              accessToken: token,
-                              wordId: wordId,
-                            );
-                            if (success) {
-                              setState(() {
-                                wordList.removeAt(idx);
-                              });
-                            } else {
-                              showAlertDialog(context, "단어 삭제 실패");
-                            }
-                          });
-                        },
-                        ),
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(
-                              minWidth: 24, minHeight: 24),
-                          icon: Icon(w.isExpanded ? Icons.expand_less : Icons
-                              .expand_more, color: Color(0xFF2F2F2F), size: 29),
-                          onPressed: () => toggleExpand(idx),
+                padding: EdgeInsets.only(top: 13, bottom: 20),
+                itemCount: wordList.length,
+                itemBuilder: (context, idx) {
+                  final w = wordList[idx];
+                  return Container(
+                    margin: EdgeInsets.symmetric(horizontal: 19, vertical: 4),
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(13),
+                      border: Border.all(color: borderColor, width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.brown!.withOpacity(0.2),
+                          blurRadius: 3,
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
-                  ),
-                  if (w.isExpanded)
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(28, 0, 28, 15),
-                      child: w.isLoading
-                          ? Row(
-                        children: [
-                          SizedBox(width: 17,
-                              height: 17,
-                              child: CircularProgressIndicator(strokeWidth: 2)),
-                          SizedBox(width: 10),
-                          Text('의미 불러오는 중...', style: TextStyle(
-                              fontSize: 14, color: Colors.grey)),
-                        ],
-                      )
-                          : w.isError
-                          ? Text('뜻을 불러오지 못했습니다.', style: TextStyle(
-                          color: Colors.red))
-                          : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: _detailRow('유의어', (w.synonym == null || w.synonym!.trim().isEmpty) ? '없음' : w.synonym!),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          title: Padding(
+                            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            child: Text(
+                              w.word,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 17,
                               ),
-                              Expanded(
-                                flex: 1,
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: 0, top: 4, right: 2),
-                                  child: Text(
-                                    '분야',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 11,
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  ),
+                            ),
+                          ),
+
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+                                constraints: BoxConstraints(
+                                  minWidth: 24,
+                                  minHeight: 24,
                                 ),
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  color: Color(0xFF2F2F2F),
+                                  size: 25,
+                                ),
+                                onPressed: () async {
+                                  showDeleteWordDialog(context, () async {
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final token =
+                                        prefs.getString('access_token') ?? '';
+                                    final int? wordId = wordList[idx].wordId;
+                                    if (wordId == null) {
+                                      setState(() {
+                                        wordList.removeAt(idx);
+                                      });
+                                      return;
+                                    }
+                                    final success =
+                                        await deleteWordFromWordbook(
+                                          accessToken: token,
+                                          wordId: wordId,
+                                        );
+                                    if (success) {
+                                      setState(() {
+                                        wordList.removeAt(idx);
+                                      });
+                                    } else {
+                                      showAlertDialog(context, "단어 삭제 실패");
+                                    }
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(
+                                  minWidth: 24,
+                                  minHeight: 24,
+                                ),
+                                icon: Icon(
+                                  w.isExpanded
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                  color: Color(0xFF2F2F2F),
+                                  size: 29,
+                                ),
+                                onPressed: () => toggleExpand(idx),
                               ),
                             ],
                           ),
+                        ),
+                        if (w.isExpanded)
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(28, 0, 28, 15),
+                            child: w.isLoading
+                                ? Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 17,
+                                        height: 17,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        '의미 불러오는 중...',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : w.isError
+                                ? Text(
+                                    '뜻을 불러오지 못했습니다.',
+                                    style: TextStyle(color: Colors.red),
+                                  )
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            flex: 2,
+                                            child: _detailRow(
+                                              '유의어',
+                                              (w.synonym == null ||
+                                                      w.synonym!.trim().isEmpty)
+                                                  ? '없음'
+                                                  : w.synonym!,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                left: 0,
+                                                top: 4,
+                                                right: 2,
+                                              ),
+                                              child: Text(
+                                                '분야',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 11,
+                                                ),
+                                                textAlign: TextAlign.right,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
 
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: _detailRow('반의어', (w.antonym == null || w.antonym!.trim().isEmpty) ? '없음' : w.antonym!),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: 8, top: 0),
-                                  child: Text(
-                                    w.field.isNotEmpty ? w.field : '없음',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 13,
-                                    ),
-                                    textAlign: TextAlign.right,
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            flex: 2,
+                                            child: _detailRow(
+                                              '반의어',
+                                              (w.antonym == null ||
+                                                      w.antonym!.trim().isEmpty)
+                                                  ? '없음'
+                                                  : w.antonym!,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                left: 8,
+                                                top: 0,
+                                              ),
+                                              child: Text(
+                                                w.field.isNotEmpty
+                                                    ? w.field
+                                                    : '없음',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 13,
+                                                ),
+                                                textAlign: TextAlign.right,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      DottedLine(color: Colors.grey, height: 3),
+                                      _detailRow('의미', w.meaning ?? "없음"),
+                                      DottedLine(color: Colors.grey, height: 3),
+                                      _detailRow(
+                                        '예문',
+                                        (w.example == null ||
+                                                w.example!.trim().isEmpty)
+                                            ? '없음'
+                                            : w.example!,
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                            ],
                           ),
-
-
-
-
-                          DottedLine(
-                            color: Colors.grey,
-                            height: 3,
-                          ),
-                          _detailRow('의미', w.meaning ?? "없음"),
-                          DottedLine(
-                            color: Colors.grey,
-                            height: 3,
-                          ),
-                          _detailRow('예문', (w.example == null || w.example!.trim().isEmpty) ? '없음' : w.example!),
-
-
-                        ],
-                      ),
+                      ],
                     ),
-                ],
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }
@@ -3226,26 +3354,18 @@ Widget _detailRow(String title, String content) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        '$title: ',
-        style: TextStyle(
-          color: Colors.black87,
-          fontSize: 13,
+      Text('$title: ', style: TextStyle(color: Colors.black87, fontSize: 13)),
+      Expanded(
+        // 반드시 Expanded로 감싸기!
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(0, 1, 0, 0),
+          child: Text(
+            content,
+            style: TextStyle(fontSize: 13, color: Colors.black87),
+            softWrap: true,
+          ),
         ),
       ),
-  Expanded( // 반드시 Expanded로 감싸기!
-  child: Padding(
-      padding: EdgeInsets.fromLTRB(0, 1, 0, 0),
-  child: Text(
-          content,
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.black87,
-  ),
-    softWrap: true,
-  ),
-  ),
-        ),
     ],
   );
 }
@@ -3335,7 +3455,6 @@ void showDeleteWordDialog(BuildContext context, VoidCallback onConfirm) {
   );
 }
 
-
 //단어장 api
 Future<List<WordItemDto>> fetchWordbook({
   int page = 0,
@@ -3355,24 +3474,24 @@ Future<List<WordItemDto>> fetchWordbook({
   );
 
   print('[fetchWordbook] REQUEST URL: $url');
-  print('[fetchWordbook] REQUEST BODY: ${jsonEncode({
-    "page": page,
-    "size": size,
-    "sort": [sortOrder],
-  })}');
-  print('[fetchWordbook] REQUEST HEADERS: ${{
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer $token',
-  }}');
-
+  print(
+    '[fetchWordbook] REQUEST BODY: ${jsonEncode({
+      "page": page,
+      "size": size,
+      "sort": [sortOrder],
+    })}',
+  );
+  print(
+    '[fetchWordbook] REQUEST HEADERS: ${{'Content-Type': 'application/json', 'Authorization': 'Bearer $token'}}',
+  );
 
   final response = await http.get(
     url,
-    headers: {'Content-Type': 'application/json',
+    headers: {
+      'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     },
   );
-
 
   print('[fetchWordbook] RESPONSE statusCode: ${response.statusCode}');
   print('[fetchWordbook] RESPONSE body: ${response.body}');
@@ -3419,6 +3538,7 @@ class WordItemDto {
     );
   }
 }
+
 Future<bool> deleteWordFromWordbook({
   required String accessToken,
   required int wordId,
@@ -3445,10 +3565,8 @@ VocabWord fromWordItemDto(WordItemDto dto) {
     field: dto.wordCategory,
     synonym: dto.synonym,
     antonym: dto.antonym,
-
   );
 }
-
 
 class ScrapActivity {
   final String category;
@@ -3477,16 +3595,13 @@ class ScrapActivity {
 }
 
 List<ScrapActivity> get todaysActivities => allActivities
-    .where((a) =>
-a.activityDateTime.year == DateTime.now().year &&
-    a.activityDateTime.month == DateTime.now().month &&
-    a.activityDateTime.day == DateTime.now().day)
+    .where(
+      (a) =>
+          a.activityDateTime.year == DateTime.now().year &&
+          a.activityDateTime.month == DateTime.now().month &&
+          a.activityDateTime.day == DateTime.now().day,
+    )
     .toList();
-
-
-
-
-
 
 class ScrapHistoryDetailPage extends StatelessWidget {
   final ScrapActivity activity;
@@ -3500,7 +3615,6 @@ class ScrapHistoryDetailPage extends StatelessWidget {
   final String? feedbackOpinion;
 
   final List<String> keywords;
-
 
   const ScrapHistoryDetailPage({
     Key? key,
@@ -3518,51 +3632,50 @@ class ScrapHistoryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      List<Widget> feedbackWidgets = [];
-      for (var i = 0; i < feedbackSections.length; i++) {
-        final section = feedbackSections[i];
-        String? extraBadge;
-        switch (section.title) {
-          case "기사 분야 파악하기":
-          case "기사 제목 파악하기":
-          case "주요 키워드 찾기":
-            if (section.similarityScore != null) {
-              extraBadge =
-              '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
-            } else if (section.score != null) {
-              extraBadge =
-              '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
-            }
-            break;
-          case "요약하기":
-            if (section.score != null)
-              extraBadge =
-              '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
-            break;
-          case "자신의 생각 키우기":
-            if (section.evaluationScore != null &&
-                section.evaluationScore!.contains(';')) {
-              extraBadge =
-              '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
-            } else if (section.evaluationScore != null) {
-              extraBadge = '사용자 유형: ${section.evaluationScore!}';
-            }
-            break;
-        }
-        feedbackWidgets.add(
-          FeedbackSectionCard(
-            title: section.title,
-            myAnswer: section.myAnswer,
-            modelAnswer: section.modelAnswer,
-            feedback: section.feedback,
-            extraBadge: extraBadge,
-            similarityScore: section.similarityScore,
-          ),
-        );
-        if (section.title == "주요 키워드 찾기") {
-          feedbackWidgets.add(UnknownWordsCard(words: unknownWords));
-        }
+    List<Widget> feedbackWidgets = [];
+    for (var i = 0; i < feedbackSections.length; i++) {
+      final section = feedbackSections[i];
+      String? extraBadge;
+      switch (section.title) {
+        case "기사 분야 파악하기":
+        case "기사 제목 파악하기":
+        case "주요 키워드 찾기":
+          if (section.similarityScore != null) {
+            extraBadge =
+                '의미 유사도: ${(section.similarityScore! * 100).toStringAsFixed(0)}%';
+          } else if (section.score != null) {
+            extraBadge =
+                '의미 유사도: ${(section.score! * 100).toStringAsFixed(0)}%';
+          }
+          break;
+        case "요약하기":
+          if (section.score != null)
+            extraBadge = '요약 점수: ${(section.score! * 100).toStringAsFixed(0)}%';
+          break;
+        case "자신의 생각 키우기":
+          if (section.evaluationScore != null &&
+              section.evaluationScore!.contains(';')) {
+            extraBadge =
+                '사용자 유형: ${userTypeStringToCode(section.evaluationScore!)}';
+          } else if (section.evaluationScore != null) {
+            extraBadge = '사용자 유형: ${section.evaluationScore!}';
+          }
+          break;
       }
+      feedbackWidgets.add(
+        FeedbackSectionCard(
+          title: section.title,
+          myAnswer: section.myAnswer,
+          modelAnswer: section.modelAnswer,
+          feedback: section.feedback,
+          extraBadge: extraBadge,
+          similarityScore: section.similarityScore,
+        ),
+      );
+      if (section.title == "주요 키워드 찾기") {
+        feedbackWidgets.add(UnknownWordsCard(words: unknownWords));
+      }
+    }
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
@@ -3627,11 +3740,10 @@ class ScrapHistoryDetailPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
 
-
-
-
                     Text(
-                      DateFormat('yyyy년 MM월 dd일 HH:mm:ss').format(activity.activityDateTime),
+                      DateFormat(
+                        'yyyy년 MM월 dd일 HH:mm:ss',
+                      ).format(activity.activityDateTime),
                       style: TextStyle(
                         color: Colors.white70,
                         fontWeight: FontWeight.w500,
@@ -3653,44 +3765,29 @@ class ScrapHistoryDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                      padding: const EdgeInsets.fromLTRB(17, 8, 17, 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFDD94),
-                        borderRadius: BorderRadius.circular(20),
+                    padding: const EdgeInsets.fromLTRB(17, 8, 17, 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFDD94),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      '스크랩 활동',
+                      style: TextStyle(
+                        color: Color(0xFF733E17),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        fontFamily: 'Jalnan2',
+                        letterSpacing: -0.5,
                       ),
-                      child: const Text(
-                        '스크랩 활동',
-                        style: TextStyle(
-                            color: Color(0xFF733E17),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                            fontFamily: 'Jalnan2',
-                            letterSpacing: -0.5),
-                      )),
-                   ...feedbackWidgets,
-
+                    ),
+                  ),
+                  ...feedbackWidgets,
                 ],
               ),
             ),
-
           ],
         ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
